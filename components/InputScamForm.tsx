@@ -8,8 +8,8 @@ import { Form, FormControl, FormField, FormItem } from "./ui/form";
 import { Input } from "./ui/input";
 import { useForm } from "react-hook-form";
 import SpinnerMini from "./ui/SpinnerMini";
-import Report from "./Report";
 import { AlertTriangle, Search, X, Bot, Brain } from "lucide-react";
+import SecurityReport from "./ui/SecurityReport";
 
 const formSchema = z.object({
   domain: z.string().min(3, "Domain is required"),
@@ -81,7 +81,9 @@ const InputScam = () => {
       <div className="mb-4 text-center">
         <div className="inline-flex items-center justify-center bg-[rgba(255,77,79,0.05)] px-4 py-2 rounded-lg border border-[rgba(255,77,79,0.1)] mb-3">
           <Brain className="w-4 h-4 text-[rgb(255,77,79)] mr-2" />
-          <p className="text-sm text-gray-700">Our AI analyzes domains for scam patterns</p>
+          <p className="text-sm text-gray-700">
+            Our AI analyzes domains for scam patterns
+          </p>
         </div>
       </div>
 
@@ -122,7 +124,9 @@ const InputScam = () => {
               disabled={loading}
               className="min-w-[120px] bg-[rgb(255,77,79)] hover:bg-[rgb(255,30,30)] text-white font-medium px-6 py-3 rounded-md m-1 flex items-center justify-center"
             >
-              {loading ? <SpinnerMini /> : (
+              {loading ? (
+                <SpinnerMini />
+              ) : (
                 <>
                   <Bot className="w-4 h-4 mr-2" />
                   AI Scan
@@ -142,7 +146,7 @@ const InputScam = () => {
 
       {score !== null && domainData && (
         <div className="mt-6 fade-in">
-          <Report score={score} data={domainData} />
+          <SecurityReport score={score} data={domainData} />
         </div>
       )}
 

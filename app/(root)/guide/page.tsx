@@ -3,7 +3,8 @@ import Link from "next/link";
 
 export const metadata = {
   title: "AI Scam Prevention Guide | AI Scam Alert",
-  description: "Comprehensive guide powered by AI to protect yourself from online scams",
+  description:
+    "Comprehensive guide powered by AI to protect yourself from online scams",
 };
 
 export default function GuidePage() {
@@ -15,9 +16,10 @@ export default function GuidePage() {
 
       <div className="prose prose-lg max-w-none">
         <p className="lead text-xl text-gray-600 mb-6">
-          This AI-enhanced comprehensive guide will help you recognize, avoid, and report
-          online scams to stay safe in the digital world. Our AI technology identifies emerging threats 
-          faster than traditional methods.
+          This AI-enhanced comprehensive guide will help you recognize, avoid,
+          and report online scams to stay safe in the digital world. Our AI
+          technology identifies emerging threats faster than traditional
+          methods.
         </p>
 
         {/* Table of Contents */}

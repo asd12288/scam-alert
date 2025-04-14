@@ -2,7 +2,18 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Calendar, Clock, Share2, Facebook, Twitter, Linkedin, Mail, MessageCircle, AlertTriangle } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  Share2,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Mail,
+  MessageCircle,
+  AlertTriangle,
+} from "lucide-react";
 
 // In a real app, this would come from getSingleBlogPost(slug) database call
 // Placeholder for demonstration purposes
@@ -11,7 +22,8 @@ const getBlogPostBySlug = (slug: string) => {
   const posts = [
     {
       id: 1,
-      title: "AI Voice Cloning Scams: How Criminals Are Impersonating Your Loved Ones",
+      title:
+        "AI Voice Cloning Scams: How Criminals Are Impersonating Your Loved Ones",
       summary:
         "The alarming rise of AI voice cloning technology used by scammers to create fake emergency calls from family members requesting immediate financial help.",
       content: `
@@ -71,16 +83,18 @@ const getBlogPostBySlug = (slug: string) => {
       slug: "ai-voice-cloning-scams",
       author: "Dr. Sophia Chen",
       author_title: "Cybersecurity Researcher",
-      author_bio: "Dr. Chen specializes in AI ethics and security vulnerabilities. She has published extensively on emerging technologies and their potential for misuse in fraud scenarios.",
+      author_bio:
+        "Dr. Chen specializes in AI ethics and security vulnerabilities. She has published extensively on emerging technologies and their potential for misuse in fraud scenarios.",
       author_image: "/experts/sophia-chen.jpg",
       category: "AI Scams",
       reading_time: "6 min read",
       featured: true,
-      tags: ["AI", "Voice Cloning", "Deepfake", "Family Scams"]
+      tags: ["AI", "Voice Cloning", "Deepfake", "Family Scams"],
     },
     {
       id: 2,
-      title: "Pig Butchering Scam: The $1B Investment Fraud Taking Over Dating Apps",
+      title:
+        "Pig Butchering Scam: The $1B Investment Fraud Taking Over Dating Apps",
       summary:
         "How criminals are using romance and friendship as a pretext for sophisticated cryptocurrency investment scams that drain victims' savings.",
       content: `
@@ -139,12 +153,13 @@ const getBlogPostBySlug = (slug: string) => {
       slug: "pig-butchering-investment-scams",
       author: "Marcus Johnson",
       author_title: "Financial Crime Analyst",
-      author_bio: "Marcus Johnson spent 15 years investigating financial fraud with the SEC before joining the private sector. He now works with victims of investment scams and educates the public on emerging threats.",
+      author_bio:
+        "Marcus Johnson spent 15 years investigating financial fraud with the SEC before joining the private sector. He now works with victims of investment scams and educates the public on emerging threats.",
       author_image: "/experts/marcus-johnson.jpg",
       category: "Investment Fraud",
       reading_time: "8 min read",
       featured: true,
-      tags: ["Cryptocurrency", "Dating Apps", "Investment", "Romance Scams"]
+      tags: ["Cryptocurrency", "Dating Apps", "Investment", "Romance Scams"],
     },
     {
       id: 3,
@@ -154,55 +169,56 @@ const getBlogPostBySlug = (slug: string) => {
       content: "Full article content here...",
       slug: "common-phishing-techniques",
       // other properties
-    }
+    },
     // More posts would be here
   ];
-  
-  return posts.find(post => post.slug === slug);
+
+  return posts.find((post) => post.slug === slug);
 };
 
 // Get related posts based on tags
 const getRelatedPosts = (currentPost: any, allPosts: any[], count = 3) => {
   if (!currentPost.tags || !currentPost.tags.length) return [];
-  
+
   return allPosts
-    .filter(post => post.id !== currentPost.id) // Exclude current post
-    .map(post => {
+    .filter((post) => post.id !== currentPost.id) // Exclude current post
+    .map((post) => {
       // Calculate relevance score based on tag overlap
-      const relevanceScore = post.tags ? 
-        post.tags.filter((tag: string) => currentPost.tags.includes(tag)).length : 
-        0;
+      const relevanceScore = post.tags
+        ? post.tags.filter((tag: string) => currentPost.tags.includes(tag))
+            .length
+        : 0;
       return { ...post, relevanceScore };
     })
-    .filter(post => post.relevanceScore > 0) // Only include posts with at least one matching tag
+    .filter((post) => post.relevanceScore > 0) // Only include posts with at least one matching tag
     .sort((a, b) => b.relevanceScore - a.relevanceScore) // Sort by relevance
     .slice(0, count);
 };
 
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
   const post = getBlogPostBySlug(params.slug);
-  
+
   if (!post) {
     notFound();
   }
-  
+
   // This would contain all posts in a real implementation
   const allPosts = [
     // ... all posts would be here
   ];
-  
+
   const relatedPosts = getRelatedPosts(post, allPosts, 2);
-  
+
   return (
     <article className="max-w-4xl mx-auto px-4 py-8">
       {/* Back link */}
-      <Link 
-        href="/blogs" 
+      <Link
+        href="/blogs"
         className="inline-flex items-center text-[rgb(255,77,79)] mb-6 hover:underline"
       >
         <ArrowLeft className="w-4 h-4 mr-2" /> Back to all articles
       </Link>
-      
+
       {/* Header */}
       <header className="mb-8">
         <div className="flex flex-wrap gap-2 items-center mb-4">
@@ -224,10 +240,10 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             {post.reading_time}
           </div>
         </div>
-        
+
         <h1 className="text-4xl font-bold text-gray-900 mb-4">{post.title}</h1>
         <p className="text-xl text-gray-600 mb-6">{post.summary}</p>
-        
+
         {/* Author info */}
         <div className="flex items-center p-4 bg-[#fff8f8] border border-[rgba(255,77,79,0.2)] rounded-lg">
           <div className="w-16 h-16 bg-gray-200 rounded-full mr-4 overflow-hidden flex items-center justify-center">
@@ -241,7 +257,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           </div>
         </div>
       </header>
-      
+
       {/* Featured Image */}
       <div className="mb-8 bg-[#fff8f8] rounded-xl h-[400px] flex items-center justify-center">
         {/* This would be an actual image in production */}
@@ -260,22 +276,23 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           />
         </svg>
       </div>
-      
+
       {/* Content */}
       <div className="prose prose-lg max-w-none mb-10">
-        <div dangerouslySetInnerHTML={{ __html: post.content }} 
+        <div
+          dangerouslySetInnerHTML={{ __html: post.content }}
           className="blog-content [&_.warning-box]:bg-[#fff8f8] [&_.warning-box]:border-l-4 [&_.warning-box]:border-[rgb(255,77,79)] [&_.warning-box]:p-4 [&_.warning-box]:rounded [&_.warning-box]:mb-6 [&_.warning-box_h3]:text-[rgb(255,77,79)] [&_.warning-box_h3]:text-lg [&_.warning-box_h3]:font-bold [&_.warning-box_h3]:mt-0 [&_.warning-box_p]:mb-0"
         />
       </div>
-      
+
       {/* Tags */}
       {post.tags && (
         <div className="mb-10">
           <h3 className="text-lg font-semibold mb-3">Related Topics</h3>
           <div className="flex flex-wrap gap-2">
             {post.tags.map((tag: string) => (
-              <span 
-                key={tag} 
+              <span
+                key={tag}
                 className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 cursor-pointer transition-colors rounded-full text-sm text-gray-700"
               >
                 #{tag}
@@ -284,26 +301,38 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           </div>
         </div>
       )}
-      
+
       {/* Social sharing */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-gray-50 rounded-lg mb-10">
         <p className="font-medium mb-4 sm:mb-0">Share this article:</p>
         <div className="flex space-x-4">
-          <button aria-label="Share on Facebook" className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow">
+          <button
+            aria-label="Share on Facebook"
+            className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow"
+          >
             <Facebook className="w-5 h-5 text-[#4267B2]" />
           </button>
-          <button aria-label="Share on Twitter" className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow">
+          <button
+            aria-label="Share on Twitter"
+            className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow"
+          >
             <Twitter className="w-5 h-5 text-[#1DA1F2]" />
           </button>
-          <button aria-label="Share on LinkedIn" className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow">
+          <button
+            aria-label="Share on LinkedIn"
+            className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow"
+          >
             <Linkedin className="w-5 h-5 text-[#0A66C2]" />
           </button>
-          <button aria-label="Share by Email" className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow">
+          <button
+            aria-label="Share by Email"
+            className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow"
+          >
             <Mail className="w-5 h-5 text-gray-600" />
           </button>
         </div>
       </div>
-      
+
       {/* Comments section */}
       <div className="mb-12">
         <div className="flex items-center justify-between mb-6">
@@ -312,7 +341,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             <MessageCircle className="w-4 h-4 mr-2" /> Add comment
           </button>
         </div>
-        
+
         <div className="space-y-6">
           {/* Sample comments - in a real app these would come from a database */}
           <div className="border-b pb-4">
@@ -323,13 +352,22 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                 <p className="text-gray-500 text-sm">4 hours ago</p>
               </div>
             </div>
-            <p className="text-gray-700">My mother almost fell for this exact scam last month. They called claiming to be my brother needing bail money after a DUI. Thankfully she called me first to verify. These scammers are getting too good.</p>
+            <p className="text-gray-700">
+              My mother almost fell for this exact scam last month. They called
+              claiming to be my brother needing bail money after a DUI.
+              Thankfully she called me first to verify. These scammers are
+              getting too good.
+            </p>
             <div className="mt-2 flex items-center gap-4">
-              <button className="text-gray-500 text-sm hover:text-[rgb(255,77,79)]">Reply</button>
-              <button className="text-gray-500 text-sm hover:text-[rgb(255,77,79)]">Report</button>
+              <button className="text-gray-500 text-sm hover:text-[rgb(255,77,79)]">
+                Reply
+              </button>
+              <button className="text-gray-500 text-sm hover:text-[rgb(255,77,79)]">
+                Report
+              </button>
             </div>
           </div>
-          
+
           <div className="border-b pb-4">
             <div className="flex items-start mb-2">
               <div className="w-10 h-10 bg-gray-200 rounded-full mr-3"></div>
@@ -338,24 +376,37 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                 <p className="text-gray-500 text-sm">Yesterday</p>
               </div>
             </div>
-            <p className="text-gray-700">I work in cybersecurity and we're seeing these cases weekly now. Important advice in this article about creating verification protocols with family members. "Safe words" really do work.</p>
+            <p className="text-gray-700">
+              I work in cybersecurity and we're seeing these cases weekly now.
+              Important advice in this article about creating verification
+              protocols with family members. "Safe words" really do work.
+            </p>
             <div className="mt-2 flex items-center gap-4">
-              <button className="text-gray-500 text-sm hover:text-[rgb(255,77,79)]">Reply</button>
-              <button className="text-gray-500 text-sm hover:text-[rgb(255,77,79)]">Report</button>
+              <button className="text-gray-500 text-sm hover:text-[rgb(255,77,79)]">
+                Reply
+              </button>
+              <button className="text-gray-500 text-sm hover:text-[rgb(255,77,79)]">
+                Report
+              </button>
             </div>
           </div>
         </div>
-        
-        <button className="text-[rgb(255,77,79)] font-medium mt-4 hover:underline">View all 6 comments</button>
+
+        <button className="text-[rgb(255,77,79)] font-medium mt-4 hover:underline">
+          View all 6 comments
+        </button>
       </div>
-      
+
       {/* Related posts */}
       {relatedPosts.length > 0 && (
         <div>
           <h3 className="text-xl font-bold mb-6">Related Articles</h3>
           <div className="grid gap-6 md:grid-cols-2">
             {relatedPosts.map((relatedPost: any) => (
-              <div key={relatedPost.id} className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+              <div
+                key={relatedPost.id}
+                className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              >
                 <div className="h-40 bg-[#fff8f8] flex items-center justify-center">
                   {/* Placeholder for image */}
                   <svg
@@ -377,8 +428,12 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                   <span className="px-2 py-1 bg-[rgba(255,77,79,0.1)] text-[rgb(255,77,79)] text-xs font-medium rounded mb-2 inline-block">
                     {relatedPost.category}
                   </span>
-                  <h4 className="font-bold mb-2 text-gray-900 line-clamp-2">{relatedPost.title}</h4>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">{relatedPost.summary}</p>
+                  <h4 className="font-bold mb-2 text-gray-900 line-clamp-2">
+                    {relatedPost.title}
+                  </h4>
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                    {relatedPost.summary}
+                  </p>
                   <Link
                     href={`/blogs/${relatedPost.slug}`}
                     className="text-[rgb(255,77,79)] text-sm font-medium hover:underline"
@@ -391,16 +446,19 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           </div>
         </div>
       )}
-      
+
       {/* Call to action */}
       <div className="mt-12 border-t pt-12">
         <div className="text-center">
           <div className="inline-flex mb-4">
             <AlertTriangle className="w-10 h-10 text-[rgb(255,77,79)]" />
           </div>
-          <h3 className="text-2xl font-bold mb-3">Think you might be a victim?</h3>
+          <h3 className="text-2xl font-bold mb-3">
+            Think you might be a victim?
+          </h3>
           <p className="text-gray-600 max-w-2xl mx-auto mb-6">
-            Our free scam assessment tool can help you determine if you've been targeted and provide next steps for protecting yourself.
+            Our free scam assessment tool can help you determine if you've been
+            targeted and provide next steps for protecting yourself.
           </p>
           <div className="flex gap-4 justify-center">
             <Link

@@ -151,7 +151,7 @@ const Report = ({ score = 100, data }: ReportProps) => {
           )}
         </div>
         <div className="flex-shrink-0">
-          <Score score={score} />
+          {/* <Score score={score} /> */}
         </div>
       </div>
 

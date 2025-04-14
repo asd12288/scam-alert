@@ -2,18 +2,26 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { getBlogPosts, type BlogPost } from "@/lib/supabase";
-import { Clock, ChevronRight, TrendingUp, AlertTriangle, Shield } from "lucide-react";
+import {
+  Clock,
+  ChevronRight,
+  TrendingUp,
+  AlertTriangle,
+  Shield,
+} from "lucide-react";
 
 export const metadata = {
   title: "Blogs | AI Scam Alert",
-  description: "Latest articles and insights about AI-detected online scams and prevention strategies",
+  description:
+    "Latest articles and insights about AI-detected online scams and prevention strategies",
 };
 
 // Enhanced sample blog posts with more detailed content and additional posts
 const SAMPLE_POSTS: BlogPost[] = [
   {
     id: 1,
-    title: "AI Voice Cloning Scams: How Criminals Are Impersonating Your Loved Ones",
+    title:
+      "AI Voice Cloning Scams: How Criminals Are Impersonating Your Loved Ones",
     summary:
       "The alarming rise of AI voice cloning technology used by scammers to create fake emergency calls from family members requesting immediate financial help.",
     content: "",
@@ -26,11 +34,12 @@ const SAMPLE_POSTS: BlogPost[] = [
     category: "AI Scams",
     reading_time: "6 min read",
     featured: true,
-    tags: ["AI", "Voice Cloning", "Deepfake", "Family Scams"]
+    tags: ["AI", "Voice Cloning", "Deepfake", "Family Scams"],
   },
   {
     id: 2,
-    title: "Pig Butchering Scam: The $1B Investment Fraud Taking Over Dating Apps",
+    title:
+      "Pig Butchering Scam: The $1B Investment Fraud Taking Over Dating Apps",
     summary:
       "How criminals are using romance and friendship as a pretext for sophisticated cryptocurrency investment scams that drain victims' savings.",
     content: "",
@@ -43,7 +52,7 @@ const SAMPLE_POSTS: BlogPost[] = [
     category: "Investment Fraud",
     reading_time: "8 min read",
     featured: true,
-    tags: ["Cryptocurrency", "Dating Apps", "Investment", "Romance Scams"]
+    tags: ["Cryptocurrency", "Dating Apps", "Investment", "Romance Scams"],
   },
   {
     id: 3,
@@ -60,7 +69,12 @@ const SAMPLE_POSTS: BlogPost[] = [
     category: "Phishing",
     reading_time: "5 min read",
     featured: false,
-    tags: ["Email Security", "Phishing", "Credential Theft", "Corporate Attacks"]
+    tags: [
+      "Email Security",
+      "Phishing",
+      "Credential Theft",
+      "Corporate Attacks",
+    ],
   },
   {
     id: 4,
@@ -77,7 +91,7 @@ const SAMPLE_POSTS: BlogPost[] = [
     category: "Online Shopping",
     reading_time: "4 min read",
     featured: false,
-    tags: ["E-commerce", "Payment Fraud", "Shopping Safety", "Product Scams"]
+    tags: ["E-commerce", "Payment Fraud", "Shopping Safety", "Product Scams"],
   },
   {
     id: 5,
@@ -94,7 +108,7 @@ const SAMPLE_POSTS: BlogPost[] = [
     category: "Social Media",
     reading_time: "7 min read",
     featured: false,
-    tags: ["Social Media", "Verification", "Identity Theft", "Influencers"]
+    tags: ["Social Media", "Verification", "Identity Theft", "Influencers"],
   },
   {
     id: 6,
@@ -111,34 +125,43 @@ const SAMPLE_POSTS: BlogPost[] = [
     category: "Government Scams",
     reading_time: "9 min read",
     featured: false,
-    tags: ["IRS Scams", "Government Impersonation", "Phone Scams", "Legal Threats"]
+    tags: [
+      "IRS Scams",
+      "Government Impersonation",
+      "Phone Scams",
+      "Legal Threats",
+    ],
   },
 ];
 
 // All unique tags from the blog posts for filtering
 const allTags = Array.from(
-  new Set(SAMPLE_POSTS.flatMap(post => post.tags || []))
+  new Set(SAMPLE_POSTS.flatMap((post) => post.tags || []))
 );
 
 export default async function BlogsPage() {
   // In production, this would fetch from Supabase
   // const posts = await getBlogPosts();
   const posts = SAMPLE_POSTS; // Using sample data for now
-  
+
   // Separate featured posts from regular posts
-  const featuredPosts = posts.filter(post => post.featured);
-  const regularPosts = posts.filter(post => !post.featured);
+  const featuredPosts = posts.filter((post) => post.featured);
+  const regularPosts = posts.filter((post) => !post.featured);
 
   return (
     <div className="py-8 px-4 max-w-7xl mx-auto">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-3">AI Scam Alert Knowledge Center</h1>
+        <h1 className="text-4xl font-bold mb-3">
+          AI Scam Alert Knowledge Center
+        </h1>
         <p className="text-gray-600 max-w-2xl mx-auto">
-          Stay informed about the latest online threats detected and analyzed by our AI technology, with expert commentary, 
-          real victim stories, and actionable prevention strategies to protect yourself and your loved ones.
+          Stay informed about the latest online threats detected and analyzed by
+          our AI technology, with expert commentary, real victim stories, and
+          actionable prevention strategies to protect yourself and your loved
+          ones.
         </p>
       </div>
-      
+
       {/* Trending Topics Section */}
       <div className="mb-10">
         <div className="flex items-center mb-4">
@@ -146,9 +169,9 @@ export default async function BlogsPage() {
           <h2 className="text-xl font-semibold">Trending Topics</h2>
         </div>
         <div className="flex flex-wrap gap-2">
-          {allTags.map(tag => (
-            <button 
-              key={tag} 
+          {allTags.map((tag) => (
+            <button
+              key={tag}
               className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm hover:bg-[rgba(255,77,79,0.05)] hover:border-[rgb(255,77,79)] transition-colors"
             >
               {tag}
@@ -164,7 +187,7 @@ export default async function BlogsPage() {
             <AlertTriangle className="w-5 h-5 text-[rgb(255,77,79)] mr-2" />
             <h2 className="text-xl font-semibold">Urgent Scam Alerts</h2>
           </div>
-          
+
           <div className="grid gap-6 md:grid-cols-2">
             {featuredPosts.map((post) => (
               <article
@@ -176,7 +199,7 @@ export default async function BlogsPage() {
                     Featured Alert
                   </span>
                 </div>
-                
+
                 <div className="h-56 bg-[#fff8f8] relative">
                   {/* Image placeholder - in production, this would use the actual image URL */}
                   <div className="w-full h-full bg-[#fff8f8] flex items-center justify-center">
@@ -211,7 +234,9 @@ export default async function BlogsPage() {
                   <h2 className="text-2xl font-bold mb-3 text-gray-900 line-clamp-2">
                     {post.title}
                   </h2>
-                  <p className="text-gray-600 mb-4 line-clamp-3">{post.summary}</p>
+                  <p className="text-gray-600 mb-4 line-clamp-3">
+                    {post.summary}
+                  </p>
 
                   <div className="flex items-center justify-between border-t pt-4 mt-4">
                     <div className="flex items-center">
@@ -220,14 +245,17 @@ export default async function BlogsPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium">{post.author}</p>
-                        <p className="text-xs text-gray-500">{post.author_title}</p>
+                        <p className="text-xs text-gray-500">
+                          {post.author_title}
+                        </p>
                       </div>
                     </div>
                     <Link
                       href={`/blogs/${post.slug}`}
                       className="flex items-center text-[rgb(255,77,79)] hover:underline font-medium"
                     >
-                      Read full analysis <ChevronRight className="w-4 h-4 ml-1" />
+                      Read full analysis{" "}
+                      <ChevronRight className="w-4 h-4 ml-1" />
                     </Link>
                   </div>
                 </div>
@@ -243,7 +271,7 @@ export default async function BlogsPage() {
           <Shield className="w-5 h-5 text-[rgb(255,77,79)] mr-2" />
           <h2 className="text-xl font-semibold">Latest Scam Insights</h2>
         </div>
-        
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {regularPosts.map((post) => (
             <article
@@ -284,12 +312,17 @@ export default async function BlogsPage() {
                 <h2 className="text-xl font-semibold mb-2 text-gray-900 line-clamp-2">
                   {post.title}
                 </h2>
-                <p className="text-gray-600 mb-4 line-clamp-3">{post.summary}</p>
+                <p className="text-gray-600 mb-4 line-clamp-3">
+                  {post.summary}
+                </p>
 
                 {post.tags && (
                   <div className="flex flex-wrap gap-1 mb-4">
-                    {post.tags.slice(0, 3).map(tag => (
-                      <span key={tag} className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                    {post.tags.slice(0, 3).map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded"
+                      >
                         #{tag}
                       </span>
                     ))}
@@ -316,17 +349,18 @@ export default async function BlogsPage() {
           ))}
         </div>
       </div>
-      
+
       {/* Newsletter Signup */}
       <div className="mt-16 bg-[#fff8f8] border border-[rgba(255,77,79,0.2)] rounded-lg p-8 text-center">
         <h3 className="text-2xl font-bold mb-3">Stay Protected</h3>
         <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-          Subscribe to our weekly scam alert newsletter and get timely warnings about emerging threats before they reach the mainstream news.
+          Subscribe to our weekly scam alert newsletter and get timely warnings
+          about emerging threats before they reach the mainstream news.
         </p>
         <div className="flex max-w-md mx-auto">
-          <input 
-            type="email" 
-            placeholder="Your email address" 
+          <input
+            type="email"
+            placeholder="Your email address"
             className="flex-grow border border-gray-300 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[rgb(255,77,79)]"
           />
           <button className="bg-[rgb(255,77,79)] text-white px-6 py-2 rounded-r-lg hover:bg-[rgb(230,60,60)] transition-colors">

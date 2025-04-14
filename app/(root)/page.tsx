@@ -1,9 +1,17 @@
-'use client'
+"use client";
 
 import InputScam from "@/components/InputScamForm";
 import TestDomains from "@/components/TestDomains";
 import React from "react";
-import { Shield, AlertTriangle, ExternalLink, CheckCircle, Bot, Brain, Zap } from "lucide-react";
+import {
+  Shield,
+  AlertTriangle,
+  ExternalLink,
+  CheckCircle,
+  Bot,
+  Brain,
+  Zap,
+} from "lucide-react";
 import Link from "next/link";
 
 const page = () => {
@@ -22,7 +30,8 @@ const page = () => {
             </h1>
           </div>
           <p className="text-gray-600 dark:text-gray-400 max-w-lg mx-auto text-lg">
-            Using artificial intelligence to detect and protect you from sophisticated online scams.
+            Using artificial intelligence to detect and protect you from
+            sophisticated online scams.
           </p>
         </div>
 
@@ -42,7 +51,9 @@ const page = () => {
               <div className="bg-white rounded-full w-14 h-14 mx-auto mb-3 flex items-center justify-center shadow-sm">
                 <Zap className="w-6 h-6 text-[rgb(255,77,79)]" />
               </div>
-              <h3 className="font-medium text-gray-900 mb-1">Real-time Analysis</h3>
+              <h3 className="font-medium text-gray-900 mb-1">
+                Real-time Analysis
+              </h3>
               <p className="text-sm text-gray-600">
                 Neural networks analyze websites in seconds for scam patterns
               </p>
@@ -60,7 +71,9 @@ const page = () => {
               <div className="bg-white rounded-full w-14 h-14 mx-auto mb-3 flex items-center justify-center shadow-sm">
                 <Brain className="w-6 h-6 text-[rgb(255,77,79)]" />
               </div>
-              <h3 className="font-medium text-gray-900 mb-1">Predictive Defense</h3>
+              <h3 className="font-medium text-gray-900 mb-1">
+                Predictive Defense
+              </h3>
               <p className="text-sm text-gray-600">
                 AI identifies threats before they become widespread
               </p>
@@ -71,12 +84,20 @@ const page = () => {
         {/* Quick stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
           <div className="bg-white border border-gray-100 rounded-lg p-4 text-center shadow-sm">
-            <p className="text-2xl font-semibold text-[rgb(255,77,79)]">$1+ Trillion</p>
-            <p className="text-sm text-gray-500">Global losses to scams in 2024</p>
+            <p className="text-2xl font-semibold text-[rgb(255,77,79)]">
+              $1+ Trillion
+            </p>
+            <p className="text-sm text-gray-500">
+              Global losses to scams in 2024
+            </p>
           </div>
           <div className="bg-white border border-gray-100 rounded-lg p-4 text-center shadow-sm">
-            <p className="text-2xl font-semibold text-[rgb(255,77,79)]">$12.5 Billion</p>
-            <p className="text-sm text-gray-500">U.S. reported losses in 2024</p>
+            <p className="text-2xl font-semibold text-[rgb(255,77,79)]">
+              $12.5 Billion
+            </p>
+            <p className="text-sm text-gray-500">
+              U.S. reported losses in 2024
+            </p>
           </div>
           <div className="bg-white border border-gray-100 rounded-lg p-4 text-center shadow-sm">
             <p className="text-2xl font-semibold text-[rgb(255,77,79)]">85%</p>
@@ -98,8 +119,8 @@ const page = () => {
                     AI-Driven Scams
                   </h3>
                   <p className="text-sm text-gray-600">
-                    AI-generated deepfakes and voice cloning used to impersonate loved ones 
-                    and celebrities for financial fraud.
+                    AI-generated deepfakes and voice cloning used to impersonate
+                    loved ones and celebrities for financial fraud.
                   </p>
                 </div>
               </div>
@@ -112,8 +133,8 @@ const page = () => {
                     Pig Butchering Scams
                   </h3>
                   <p className="text-sm text-gray-600">
-                    Long-term trust building followed by investment fraud, often through 
-                    fake cryptocurrency or trading platforms.
+                    Long-term trust building followed by investment fraud, often
+                    through fake cryptocurrency or trading platforms.
                   </p>
                 </div>
               </div>
@@ -134,7 +155,8 @@ const page = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-700">
-                  Our AI scans the domain against multiple threat intelligence databases
+                  Our AI scans the domain against multiple threat intelligence
+                  databases
                 </p>
               </div>
             </div>
@@ -144,7 +166,8 @@ const page = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-700">
-                  Advanced machine learning analyzes domain registration patterns and anomalies
+                  Advanced machine learning analyzes domain registration
+                  patterns and anomalies
                 </p>
               </div>
             </div>
@@ -154,7 +177,8 @@ const page = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-700">
-                  Neural network models evaluate website content for scam indicators
+                  Neural network models evaluate website content for scam
+                  indicators
                 </p>
               </div>
             </div>
@@ -164,7 +188,8 @@ const page = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-700">
-                  Real-time AI risk assessment updated with emerging scam patterns
+                  Real-time AI risk assessment updated with emerging scam
+                  patterns
                 </p>
               </div>
             </div>
