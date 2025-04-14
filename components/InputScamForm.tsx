@@ -76,82 +76,97 @@ const InputScam = () => {
     }
   }
 
+  const placeholderExamples = [
+    "example.com",
+    "yourbank-verify.com",
+    "amazonshopping.site",
+  ];
+
+  const [currentPlaceholder, setCurrentPlaceholder] = useState(0);
+
+  // Change placeholder text every 3 seconds
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentPlaceholder((prev) => (prev + 1) % placeholderExamples.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <div className="w-full max-w-xl mx-auto">
-      <div className="mb-4 text-center">
-        <div className="inline-flex items-center justify-center bg-[rgba(255,77,79,0.05)] px-4 py-2 rounded-lg border border-[rgba(255,77,79,0.1)] mb-3">
-          <Brain className="w-4 h-4 text-[rgb(255,77,79)] mr-2" />
-          <p className="text-sm text-gray-700">
-            Our AI analyzes domains for scam patterns
-          </p>
-        </div>
-      </div>
+    <div className="w-full max-w-2xl mx-auto">
+      
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="flex items-center p-1 bg-white shadow-md rounded-lg border border-gray-100">
-            <div className="flex items-center pl-3 text-gray-400">
-              <Search size={20} />
+          <div className="flex flex-col">
+            <div className="flex items-center p-1.5 bg-white shadow-sm rounded-lg border border-gray-200">
+              <div className="flex items-center pl-3 text-gray-400">
+                <Search size={18} />
+              </div>
+              <FormField
+                control={form.control}
+                name="domain"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          className="w-full px-3 py-3 border-0 shadow-none focus:ring-0 text-gray-900 placeholder-gray-400 text-lg"
+                          placeholder={`Enter a domain (e.g., ${placeholderExamples[currentPlaceholder]})`}
+                          {...field}
+                        />
+                        {field.value && (
+                          <button
+                            type="button"
+                            onClick={resetForm}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                          >
+                            <X size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                disabled={loading}
+                className="min-w-[120px] bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-3 rounded-md m-1 flex items-center justify-center"
+              >
+                {loading ? (
+                  <SpinnerMini />
+                ) : (
+                  <>
+                    <Bot className="w-4 h-4 mr-1.5" />
+                    Scan Domain
+                  </>
+                )}
+              </Button>
             </div>
-            <FormField
-              control={form.control}
-              name="domain"
-              render={({ field }) => (
-                <FormItem className="flex-1">
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        className="w-full px-3 py-3 border-0 shadow-none focus:ring-0 text-gray-900 placeholder-gray-400 text-lg"
-                        placeholder="Enter a domain for AI scanning"
-                        {...field}
-                      />
-                      {field.value && (
-                        <button
-                          type="button"
-                          onClick={resetForm}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                        >
-                          <X size={18} />
-                        </button>
-                      )}
-                    </div>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <Button
-              type="submit"
-              disabled={loading}
-              className="min-w-[120px] bg-[rgb(255,77,79)] hover:bg-[rgb(255,30,30)] text-white font-medium px-6 py-3 rounded-md m-1 flex items-center justify-center"
-            >
-              {loading ? (
-                <SpinnerMini />
-              ) : (
-                <>
-                  <Bot className="w-4 h-4 mr-2" />
-                  AI Scan
-                </>
-              )}
-            </Button>
+
+            <div className="text-center mt-1.5 text-xs text-gray-500">
+              Enter any website domain to check if it's safe
+            </div>
           </div>
         </form>
       </Form>
 
       {error && (
-        <div className="mt-4 p-3 bg-[#fff8f8] border border-[rgba(255,77,79,0.3)] rounded-lg text-[rgb(255,77,79)] flex items-start">
+        <div className="mt-5 p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 flex items-start">
           <AlertTriangle className="mr-2 mt-0.5 flex-shrink-0" size={16} />
           <span>{error}</span>
         </div>
       )}
 
       {score !== null && domainData && (
-        <div className="mt-6 fade-in">
+        <div className="mt-8 transition-all duration-300 ease-in-out animate-fadeIn">
           <SecurityReport score={score} data={domainData} />
         </div>
       )}
 
       {!score && !error && !loading && form.formState.isSubmitted && (
-        <div className="mt-6 text-center p-6 bg-gray-50 rounded-lg border border-gray-100 text-gray-600">
+        <div className="mt-8 text-center p-5 bg-gray-50 rounded-lg border border-gray-100 text-gray-600">
           No results to display. Try checking a different domain.
         </div>
       )}

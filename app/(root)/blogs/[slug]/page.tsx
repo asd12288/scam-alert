@@ -13,6 +13,7 @@ import {
   Mail,
   MessageCircle,
   AlertTriangle,
+  Shield,
 } from "lucide-react";
 
 // In a real app, this would come from getSingleBlogPost(slug) database call
@@ -210,22 +211,22 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
   const relatedPosts = getRelatedPosts(post, allPosts, 2);
 
   return (
-    <article className="max-w-4xl mx-auto px-4 py-8">
+    <article className="max-w-6xl mx-auto px-4 py-8">
       {/* Back link */}
       <Link
         href="/blogs"
-        className="inline-flex items-center text-[rgb(255,77,79)] mb-6 hover:underline"
+        className="inline-flex items-center text-blue-700 mb-6 hover:underline font-medium"
       >
         <ArrowLeft className="w-4 h-4 mr-2" /> Back to all articles
       </Link>
 
       {/* Header */}
       <header className="mb-8">
-        <div className="flex flex-wrap gap-2 items-center mb-4">
-          <span className="px-3 py-1 bg-[rgba(255,77,79,0.1)] text-[rgb(255,77,79)] rounded-full text-sm font-medium">
+        <div className="flex flex-wrap gap-3 items-center mb-4">
+          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
             {post.category}
           </span>
-          <div className="flex items-center text-gray-500 text-sm">
+          <div className="flex items-center text-gray-600 text-sm">
             <Calendar className="w-4 h-4 mr-1" />
             <time dateTime={post.published_at}>
               {new Date(post.published_at).toLocaleDateString("en-US", {
@@ -235,34 +236,38 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
               })}
             </time>
           </div>
-          <div className="flex items-center text-gray-500 text-sm">
+          <div className="flex items-center text-gray-600 text-sm">
             <Clock className="w-4 h-4 mr-1" />
             {post.reading_time}
           </div>
         </div>
 
         <h1 className="text-4xl font-bold text-gray-900 mb-4">{post.title}</h1>
-        <p className="text-xl text-gray-600 mb-6">{post.summary}</p>
+        <p className="text-xl text-gray-700 mb-6">{post.summary}</p>
 
         {/* Author info */}
-        <div className="flex items-center p-4 bg-[#fff8f8] border border-[rgba(255,77,79,0.2)] rounded-lg">
-          <div className="w-16 h-16 bg-gray-200 rounded-full mr-4 overflow-hidden flex items-center justify-center">
+        <div className="flex items-center p-6 bg-blue-50 border border-blue-100 rounded-lg shadow-sm">
+          <div className="w-16 h-16 bg-blue-600 rounded-full mr-5 overflow-hidden flex items-center justify-center">
             {/* This would be an actual image in production */}
-            <span className="text-xl font-bold">{post.author.charAt(0)}</span>
+            <span className="text-xl font-bold text-white">
+              {post.author.charAt(0)}
+            </span>
           </div>
           <div>
             <h3 className="font-bold text-lg">{post.author}</h3>
-            <p className="text-gray-600">{post.author_title}</p>
-            <p className="text-sm text-gray-500 mt-1">{post.author_bio}</p>
+            <p className="text-blue-700 font-medium">{post.author_title}</p>
+            <p className="text-sm text-gray-600 mt-1 max-w-2xl">
+              {post.author_bio}
+            </p>
           </div>
         </div>
       </header>
 
       {/* Featured Image */}
-      <div className="mb-8 bg-[#fff8f8] rounded-xl h-[400px] flex items-center justify-center">
+      <div className="mb-10 bg-blue-50 rounded-xl h-[400px] flex items-center justify-center overflow-hidden shadow-md">
         {/* This would be an actual image in production */}
         <svg
-          className="w-24 h-24 text-[rgba(255,77,79,0.3)]"
+          className="w-24 h-24 text-blue-400"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -278,139 +283,79 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
       </div>
 
       {/* Content */}
-      <div className="prose prose-lg max-w-none mb-10">
+      <div className="prose prose-lg max-w-none mb-12">
         <div
           dangerouslySetInnerHTML={{ __html: post.content }}
-          className="blog-content [&_.warning-box]:bg-[#fff8f8] [&_.warning-box]:border-l-4 [&_.warning-box]:border-[rgb(255,77,79)] [&_.warning-box]:p-4 [&_.warning-box]:rounded [&_.warning-box]:mb-6 [&_.warning-box_h3]:text-[rgb(255,77,79)] [&_.warning-box_h3]:text-lg [&_.warning-box_h3]:font-bold [&_.warning-box_h3]:mt-0 [&_.warning-box_p]:mb-0"
+          className="prose-headings:text-blue-900 prose-a:text-blue-700 prose-a:font-medium"
         />
       </div>
 
+      {/* Share and engagement section */}
+      <div className="border-t border-b border-gray-200 py-6 my-10">
+        <div className="flex flex-wrap justify-between items-center">
+          <div>
+            <h3 className="text-lg font-medium mb-2">Share this article</h3>
+            <div className="flex space-x-3">
+              <button className="p-2 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">
+                <Facebook className="w-5 h-5" />
+              </button>
+              <button className="p-2 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">
+                <Twitter className="w-5 h-5" />
+              </button>
+              <button className="p-2 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">
+                <Linkedin className="w-5 h-5" />
+              </button>
+              <button className="p-2 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">
+                <Mail className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-4 md:mt-0">
+            <Link
+              href="#"
+              className="inline-flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Discuss this article
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Tags */}
-      {post.tags && (
-        <div className="mb-10">
-          <h3 className="text-lg font-semibold mb-3">Related Topics</h3>
-          <div className="flex flex-wrap gap-2">
-            {post.tags.map((tag: string) => (
-              <span
-                key={tag}
-                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 cursor-pointer transition-colors rounded-full text-sm text-gray-700"
+      <div className="mb-10">
+        <h3 className="text-lg font-medium mb-3">Related topics</h3>
+        <div className="flex flex-wrap gap-2">
+          {post.tags &&
+            post.tags.map((tag: string, index: number) => (
+              <Link
+                key={index}
+                href={`/blogs?tag=${encodeURIComponent(tag)}`}
+                className="px-3 py-1.5 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-blue-100 hover:text-blue-800 transition-colors"
               >
-                #{tag}
-              </span>
+                {tag}
+              </Link>
             ))}
-          </div>
-        </div>
-      )}
-
-      {/* Social sharing */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-gray-50 rounded-lg mb-10">
-        <p className="font-medium mb-4 sm:mb-0">Share this article:</p>
-        <div className="flex space-x-4">
-          <button
-            aria-label="Share on Facebook"
-            className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow"
-          >
-            <Facebook className="w-5 h-5 text-[#4267B2]" />
-          </button>
-          <button
-            aria-label="Share on Twitter"
-            className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow"
-          >
-            <Twitter className="w-5 h-5 text-[#1DA1F2]" />
-          </button>
-          <button
-            aria-label="Share on LinkedIn"
-            className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow"
-          >
-            <Linkedin className="w-5 h-5 text-[#0A66C2]" />
-          </button>
-          <button
-            aria-label="Share by Email"
-            className="p-2 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow"
-          >
-            <Mail className="w-5 h-5 text-gray-600" />
-          </button>
         </div>
       </div>
 
-      {/* Comments section */}
-      <div className="mb-12">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold">Discussion (6)</h3>
-          <button className="bg-[rgb(255,77,79)] text-white px-4 py-2 rounded-lg hover:bg-[rgb(230,60,60)] transition-colors flex items-center">
-            <MessageCircle className="w-4 h-4 mr-2" /> Add comment
-          </button>
-        </div>
-
-        <div className="space-y-6">
-          {/* Sample comments - in a real app these would come from a database */}
-          <div className="border-b pb-4">
-            <div className="flex items-start mb-2">
-              <div className="w-10 h-10 bg-gray-200 rounded-full mr-3"></div>
-              <div>
-                <h4 className="font-bold">Jennifer K.</h4>
-                <p className="text-gray-500 text-sm">4 hours ago</p>
-              </div>
-            </div>
-            <p className="text-gray-700">
-              My mother almost fell for this exact scam last month. They called
-              claiming to be my brother needing bail money after a DUI.
-              Thankfully she called me first to verify. These scammers are
-              getting too good.
-            </p>
-            <div className="mt-2 flex items-center gap-4">
-              <button className="text-gray-500 text-sm hover:text-[rgb(255,77,79)]">
-                Reply
-              </button>
-              <button className="text-gray-500 text-sm hover:text-[rgb(255,77,79)]">
-                Report
-              </button>
-            </div>
-          </div>
-
-          <div className="border-b pb-4">
-            <div className="flex items-start mb-2">
-              <div className="w-10 h-10 bg-gray-200 rounded-full mr-3"></div>
-              <div>
-                <h4 className="font-bold">Michael T.</h4>
-                <p className="text-gray-500 text-sm">Yesterday</p>
-              </div>
-            </div>
-            <p className="text-gray-700">
-              I work in cybersecurity and we're seeing these cases weekly now.
-              Important advice in this article about creating verification
-              protocols with family members. "Safe words" really do work.
-            </p>
-            <div className="mt-2 flex items-center gap-4">
-              <button className="text-gray-500 text-sm hover:text-[rgb(255,77,79)]">
-                Reply
-              </button>
-              <button className="text-gray-500 text-sm hover:text-[rgb(255,77,79)]">
-                Report
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <button className="text-[rgb(255,77,79)] font-medium mt-4 hover:underline">
-          View all 6 comments
-        </button>
-      </div>
-
-      {/* Related posts */}
-      {relatedPosts.length > 0 && (
-        <div>
-          <h3 className="text-xl font-bold mb-6">Related Articles</h3>
-          <div className="grid gap-6 md:grid-cols-2">
+      {/* Related articles */}
+      {relatedPosts && relatedPosts.length > 0 && (
+        <div className="mt-12 mb-8">
+          <h2 className="text-2xl font-bold mb-6 text-gray-900">
+            Related Articles
+          </h2>
+          <div className="grid md:grid-cols-2 gap-6">
             {relatedPosts.map((relatedPost: any) => (
               <div
                 key={relatedPost.id}
-                className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                className="border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
               >
-                <div className="h-40 bg-[#fff8f8] flex items-center justify-center">
-                  {/* Placeholder for image */}
+                <div className="h-40 bg-blue-50 flex items-center justify-center">
+                  {/* Placeholder image */}
                   <svg
-                    className="w-12 h-12 text-[rgba(255,77,79,0.3)]"
+                    className="w-12 h-12 text-blue-300"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -424,22 +369,27 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
                     />
                   </svg>
                 </div>
-                <div className="p-4">
-                  <span className="px-2 py-1 bg-[rgba(255,77,79,0.1)] text-[rgb(255,77,79)] text-xs font-medium rounded mb-2 inline-block">
-                    {relatedPost.category}
-                  </span>
-                  <h4 className="font-bold mb-2 text-gray-900 line-clamp-2">
-                    {relatedPost.title}
-                  </h4>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                <div className="p-5">
+                  <div className="flex items-center mb-2">
+                    <span className="text-sm text-blue-700 font-medium">
+                      {relatedPost.category}
+                    </span>
+                    <span className="mx-2 text-gray-300">•</span>
+                    <span className="text-sm text-gray-500">
+                      {relatedPost.reading_time}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-lg mb-2">
+                    <Link
+                      href={`/blogs/${relatedPost.slug}`}
+                      className="hover:text-blue-700"
+                    >
+                      {relatedPost.title}
+                    </Link>
+                  </h3>
+                  <p className="text-gray-600 text-sm line-clamp-2">
                     {relatedPost.summary}
                   </p>
-                  <Link
-                    href={`/blogs/${relatedPost.slug}`}
-                    className="text-[rgb(255,77,79)] text-sm font-medium hover:underline"
-                  >
-                    Read article →
-                  </Link>
                 </div>
               </div>
             ))}
@@ -447,32 +397,29 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
         </div>
       )}
 
-      {/* Call to action */}
-      <div className="mt-12 border-t pt-12">
-        <div className="text-center">
-          <div className="inline-flex mb-4">
-            <AlertTriangle className="w-10 h-10 text-[rgb(255,77,79)]" />
+      {/* CTA section */}
+      <div className="bg-blue-50 border border-blue-100 rounded-xl p-8 my-10">
+        <div className="flex flex-col md:flex-row items-center">
+          <div className="md:w-2/3 mb-6 md:mb-0 md:mr-6">
+            <h3 className="text-2xl font-bold text-blue-900 mb-2">
+              Stay protected from scams
+            </h3>
+            <p className="text-blue-800">
+              Get alerts about new scams and threats directly to your inbox.
+              Join our community of security-conscious people.
+            </p>
           </div>
-          <h3 className="text-2xl font-bold mb-3">
-            Think you might be a victim?
-          </h3>
-          <p className="text-gray-600 max-w-2xl mx-auto mb-6">
-            Our free scam assessment tool can help you determine if you've been
-            targeted and provide next steps for protecting yourself.
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Link
-              href="/guide"
-              className="bg-[rgb(255,77,79)] text-white px-6 py-3 rounded-lg hover:bg-[rgb(230,60,60)] transition-colors font-medium"
-            >
-              Free Scam Assessment
-            </Link>
-            <Link
-              href="/blogs"
-              className="bg-white text-[rgb(255,77,79)] border border-[rgb(255,77,79)] px-6 py-3 rounded-lg hover:bg-[rgba(255,77,79,0.05)] transition-colors font-medium"
-            >
-              See More Articles
-            </Link>
+          <div className="md:w-1/3">
+            <div className="flex">
+              <input
+                type="email"
+                placeholder="Your email address"
+                className="flex-grow px-4 py-2 rounded-l-lg border-y border-l border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button className="bg-blue-600 text-white font-medium px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-colors">
+                Subscribe
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -79,6 +79,25 @@ const Report = ({ score = 100, data }: ReportProps) => {
     }
   };
 
+  // Extract bullet points from the AI summary
+  const extractContent = (summary: string) => {
+    if (!summary) return { verdict: "", points: [] };
+
+    const lines = summary.split("\n").filter((line) => line.trim() !== "");
+
+    // First line is usually the summary statement
+    const verdict = lines[0] || "";
+
+    // Find all emoji bullet points
+    const emojiPattern = /(🔴|🟠|🟡|🟢|✅|•)/;
+    const points = lines
+      .slice(1)
+      .filter((line) => emojiPattern.test(line))
+      .map((line) => line.trim());
+
+    return { verdict, points };
+  };
+
   const toggleSection = (section: string) => {
     if (expandedSection === section) {
       setExpandedSection(null);
@@ -98,65 +117,109 @@ const Report = ({ score = 100, data }: ReportProps) => {
     ...(patternAnalysis.riskFactors || []),
   ];
 
+  // Define status object for consistent styles
+  const securityStatus = isDangerous
+    ? {
+        emoji: "⛔",
+        color: "text-red-600",
+        bg: "bg-red-50",
+        border: "border-red-200",
+      }
+    : needsCaution
+    ? {
+        emoji: "⚠️",
+        color: "text-amber-600",
+        bg: "bg-amber-50",
+        border: "border-amber-200",
+      }
+    : {
+        emoji: "✅",
+        color: "text-green-600",
+        bg: "bg-green-50",
+        border: "border-green-200",
+      };
+
+  // Parse AI summary content
+  const { verdict, points } = aiSummary
+    ? extractContent(aiSummary)
+    : { verdict: "", points: [] };
+
   return (
     <div
-      className={`bg-white rounded-lg shadow-lg overflow-hidden ${
+      className={`overflow-hidden rounded-lg shadow border max-w-2xl mx-auto ${
         isDangerous
-          ? "border-2 border-[rgb(255,77,79)]"
+          ? "border-red-300"
           : needsCaution
-          ? "border-2 border-[rgb(250,173,20)]"
-          : "border border-gray-200"
+          ? "border-amber-300"
+          : "border-gray-200"
       }`}
     >
       {/* Header with domain info and score */}
-      <div className="p-5 flex flex-col md:flex-row gap-6 border-b border-gray-100">
-        <div className="flex-1">
-          <h2 className="text-2xl font-medium text-gray-900">{domain}</h2>
-
-          {/* Status indicator based on score */}
-          {isDangerous && (
-            <div className="mt-2 text-[rgb(255,77,79)] text-sm flex items-center font-medium">
-              <AlertTriangle size={14} className="mr-1" />
-              AI Scam Alert: High-risk indicators detected
-            </div>
-          )}
-
-          {needsCaution && !isDangerous && (
-            <div className="mt-2 text-[rgb(250,173,20)] text-sm flex items-center font-medium">
-              <AlertCircle size={14} className="mr-1" />
-              AI Scam Alert: Potential risk signals detected
-            </div>
-          )}
-
-          {!needsCaution && (
-            <div className="mt-2 text-[rgb(82,196,26)] text-sm flex items-center font-medium">
-              <Shield size={14} className="mr-1" />
-              AI Scam Alert: No suspicious activity detected
-            </div>
-          )}
-
-          {/* AI Summary section */}
-          {aiSummary && (
-            <div className="mt-4 p-4 bg-[#f8f9ff] rounded-md border border-gray-200">
-              <div className="flex items-center gap-1.5 mb-2 text-gray-800">
-                <Brain size={16} className="text-blue-600" />
-                <span className="text-sm font-medium">
-                  AI SCAM DETECTION REPORT
-                </span>
-              </div>
-              <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                {aiSummary}
-              </div>
+      <div className="px-6 py-5 bg-white border-b border-gray-100 flex justify-between items-center">
+        <div className="flex flex-col">
+          <div className="flex items-center">
+            <span className="text-xl font-semibold text-gray-900">
+              {domain}
+            </span>
+          </div>
+          {securityStatus && (
+            <div
+              className={`mt-1 ${securityStatus.color} text-sm flex items-center`}
+            >
+              <span className="mr-1">{securityStatus.emoji}</span>
+              {isDangerous
+                ? "High risk detected"
+                : needsCaution
+                ? "Use caution"
+                : "No risks detected"}
             </div>
           )}
         </div>
-        <div className="flex-shrink-0">
-          {/* <Score score={score} /> */}
-        </div>
+        <Score score={score} size="lg" />
       </div>
 
+      {/* AI Summary section */}
+      {aiSummary && (
+        <div
+          className={`p-6 ${securityStatus.bg} border-b ${securityStatus.border}`}
+        >
+          <div className="flex items-center mb-3">
+            <Brain className="w-5 h-5 mr-2 text-blue-600" />
+            <p className="font-medium text-gray-800 text-base">
+              AI Security Analysis
+            </p>
+          </div>
+
+          {/* Overall verdict */}
+          {verdict && (
+            <p className="text-gray-800 font-medium mb-4 text-base">
+              {verdict}
+            </p>
+          )}
+
+          {/* Bullet points with emojis */}
+          {points.length > 0 && (
+            <div className="space-y-3">
+              {points.map((point, index) => (
+                <div
+                  key={index}
+                  className="flex p-3 bg-white rounded-md border border-gray-100 shadow-sm"
+                >
+                  <div className="pr-3 text-lg">
+                    {point.match(/(🔴|🟠|🟡|🟢|✅|•)/) || "•"}
+                  </div>
+                  <div className="text-gray-800">
+                    {point.replace(/(🔴|🟠|🟡|🟢|✅|•\s*)/, "")}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Results sections */}
-      <div className="divide-y divide-gray-100 text-black">
+      <div className="divide-y divide-gray-100">
         {/* Pattern Analysis section */}
         {patternAnalysis.riskFactors.length > 0 && (
           <div>
@@ -164,46 +227,30 @@ const Report = ({ score = 100, data }: ReportProps) => {
               className="w-full p-4 text-left flex justify-between items-center focus:outline-none hover:bg-gray-50 transition-colors"
               onClick={() => toggleSection("patternAnalysis")}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center">
                 <div
-                  className={`w-4 h-4 rounded-full flex items-center justify-center ${
-                    isSuspicious ? "bg-[rgb(250,173,20)]" : "bg-gray-400"
+                  className={`w-3 h-3 rounded-full mr-2 ${
+                    patternAnalysis.suspiciousScore > 15
+                      ? "bg-amber-500"
+                      : "bg-gray-400"
                   }`}
-                >
-                  {isSuspicious ? (
-                    <AlertTriangle size={10} className="text-white" />
-                  ) : (
-                    <Info size={10} className="text-white" />
-                  )}
-                </div>
-                <span className="font-medium text-gray-900">
+                />
+                <span className="font-medium text-gray-800">
                   AI Pattern Analysis
                 </span>
               </div>
               {expandedSection === "patternAnalysis" ? (
-                <ChevronUp size={18} className="text-gray-500" />
+                <ChevronUp size={16} className="text-gray-500" />
               ) : (
-                <ChevronDown size={18} className="text-gray-500" />
+                <ChevronDown size={16} className="text-gray-500" />
               )}
             </button>
 
             {expandedSection === "patternAnalysis" && (
-              <div className="p-5 pt-2 text-sm space-y-3 bg-[#fafafa] fade-in">
-                <p className="text-gray-700">
-                  {isSuspicious
-                    ? "Our advanced AI algorithms detected suspicious patterns in this domain name."
-                    : "Our intelligent AI analysis found some patterns worth noting in this domain name."}
-                </p>
-
-                <div
-                  className={`mt-3 p-3 rounded-md border ${
-                    isSuspicious
-                      ? "bg-[rgba(250,173,20,0.1)] border-[rgba(250,173,20,0.3)] text-[rgb(194,120,3)]"
-                      : "bg-gray-50 border-gray-200 text-gray-700"
-                  }`}
-                >
-                  <p className="font-medium mb-2">AI-detected patterns:</p>
-                  <ul className="list-disc pl-5 space-y-1 text-sm">
+              <div className="p-4 text-sm bg-white">
+                <div className="p-3 bg-amber-50 rounded-md border border-amber-100 text-amber-800 text-xs">
+                  <p className="font-medium mb-2">🔍 Our AI detected:</p>
+                  <ul className="list-disc pl-4 space-y-1">
                     {patternAnalysis.riskFactors.map((factor, index) => (
                       <li key={index}>{factor}</li>
                     ))}
@@ -220,45 +267,47 @@ const Report = ({ score = 100, data }: ReportProps) => {
             className="w-full p-4 text-left flex justify-between items-center focus:outline-none hover:bg-gray-50 transition-colors"
             onClick={() => toggleSection("safeBrowsing")}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center">
               <div
-                className={`w-4 h-4 rounded-full flex items-center justify-center ${
-                  isMalicious ? "bg-[rgb(255,77,79)]" : "bg-[rgb(82,196,26)]"
+                className={`w-3 h-3 rounded-full mr-2 ${
+                  isMalicious ? "bg-red-500" : "bg-green-500"
                 }`}
-              >
-                {isMalicious ? (
-                  <AlertTriangle size={10} className="text-white" />
-                ) : (
-                  <Shield size={10} className="text-white" />
-                )}
-              </div>
-              <span className="font-medium text-gray-900">
+              />
+              <span className="font-medium text-gray-800">
                 Google Safe Browsing
               </span>
             </div>
             {expandedSection === "safeBrowsing" ? (
-              <ChevronUp size={18} className="text-gray-500" />
+              <ChevronUp size={16} className="text-gray-500" />
             ) : (
-              <ChevronDown size={18} className="text-gray-500" />
+              <ChevronDown size={16} className="text-gray-500" />
             )}
           </button>
 
           {expandedSection === "safeBrowsing" && (
-            <div className="p-5 pt-2 text-sm space-y-3 bg-[#fafafa] fade-in">
-              <p className="text-gray-700">
-                {hasError
-                  ? "Unable to check this domain with Google Safe Browsing."
-                  : isMalicious
-                  ? "This domain is flagged as potentially malicious."
-                  : "No threats detected by Google Safe Browsing."}
-              </p>
+            <div className="p-4 text-sm bg-white">
+              <div className="flex items-center mb-2">
+                {isMalicious ? (
+                  <>
+                    <AlertTriangle size={14} className="text-red-500 mr-2" />
+                    <span className="text-red-600 font-medium">
+                      This domain is flagged as potentially malicious
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Shield size={14} className="text-green-500 mr-2" />
+                    <span className="text-green-600 font-medium">
+                      No threats detected
+                    </span>
+                  </>
+                )}
+              </div>
 
               {matches && matches.length > 0 && (
-                <div className="mt-3 p-3 bg-[#fff8f8] rounded-md border border-[rgba(255,77,79,0.3)]">
-                  <p className="font-medium text-[rgb(255,77,79)]">
-                    Detected threats:
-                  </p>
-                  <ul className="list-disc pl-5 mt-2 space-y-1 text-[rgb(255,77,79)] text-xs">
+                <div className="mt-2 p-2 bg-red-50 rounded border border-red-100 text-xs text-red-700">
+                  <p className="font-medium mb-1">Detected threats:</p>
+                  <ul className="list-disc pl-4 space-y-1">
                     {matches.map((match, index) => (
                       <li key={index}>
                         {match.threatType} ({match.platformType})
@@ -277,128 +326,73 @@ const Report = ({ score = 100, data }: ReportProps) => {
             className="w-full p-4 text-left flex justify-between items-center focus:outline-none hover:bg-gray-50 transition-colors"
             onClick={() => toggleSection("whois")}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center">
               <div
-                className={`w-4 h-4 rounded-full ${
-                  whoisRiskFactors.length > 0
-                    ? "bg-[rgb(250,173,20)]"
-                    : "bg-gray-400"
+                className={`w-3 h-3 rounded-full mr-2 ${
+                  whoisRiskFactors.length > 0 ? "bg-amber-500" : "bg-gray-400"
                 }`}
-              ></div>
-              <span className="font-medium text-gray-900">
+              />
+              <span className="font-medium text-gray-800">
                 Domain Information
               </span>
             </div>
             {expandedSection === "whois" ? (
-              <ChevronUp size={18} className="text-gray-500" />
+              <ChevronUp size={16} className="text-gray-500" />
             ) : (
-              <ChevronDown size={18} className="text-gray-500" />
+              <ChevronDown size={16} className="text-gray-500" />
             )}
           </button>
 
           {expandedSection === "whois" && (
-            <div className="p-5 pt-2 text-sm space-y-3 bg-[#fafafa] fade-in">
+            <div className="p-4 text-sm bg-white">
               {whoisData && Object.keys(whoisData).length > 0 ? (
-                <>
-                  <div className="grid grid-cols-2 gap-y-3 text-sm bg-white p-4 rounded-md border border-gray-200">
-                    <div className="text-gray-500 font-medium">Registered:</div>
-                    <div className="text-gray-900">
-                      {formatDate(whoisData.creationDate)}
-                    </div>
+                <div>
+                  <div className="grid grid-cols-2 gap-y-2">
+                    <div className="text-gray-500">Created:</div>
+                    <div>{formatDate(whoisData.creationDate)}</div>
 
-                    <div className="text-gray-500 font-medium">Expires:</div>
-                    <div className="text-gray-900">
-                      {formatDate(whoisData.expirationDate)}
-                    </div>
-
-                    <div className="text-gray-500 font-medium">Age:</div>
-                    <div className="text-gray-900">
+                    <div className="text-gray-500">Age:</div>
+                    <div>
                       {whoisData.domainAge
                         ? `${whoisData.domainAge} days`
                         : "-"}
                     </div>
 
-                    <div className="text-gray-500 font-medium">Registrar:</div>
-                    <div className="text-gray-900">
-                      {whoisData.registrar || "-"}
-                    </div>
-
-                    <div className="text-gray-500 font-medium">Registrant:</div>
-                    <div className="text-gray-900">
-                      {whoisData.registrantName ||
-                        whoisData.registrantOrganization ||
-                        "-"}
-                    </div>
-
-                    <div className="text-gray-500 font-medium">
-                      Privacy Protected:
-                    </div>
-                    <div className="text-gray-900">
-                      {whoisData.privacyProtected ? "Yes" : "No"}
-                    </div>
+                    <div className="text-gray-500">Registrar:</div>
+                    <div>{whoisData.registrar || "-"}</div>
                   </div>
 
                   {whoisRiskFactors.length > 0 && (
-                    <div className="mt-3 p-3 bg-[rgba(250,173,20,0.1)] text-[rgb(194,120,3)] text-sm rounded-md border border-[rgba(250,173,20,0.3)]">
-                      <div className="font-medium mb-1 flex items-center">
-                        <AlertTriangle size={14} className="mr-1" />
-                        Risk factors:
-                      </div>
-                      <ul className="list-disc pl-5 space-y-1">
+                    <div className="mt-3 p-3 bg-amber-50 rounded-md border border-amber-100 text-amber-800 text-xs">
+                      <p className="font-medium mb-1">⚠️ Risk factors:</p>
+                      <ul className="list-disc pl-4 space-y-1">
                         {whoisRiskFactors.map((factor, index) => (
                           <li key={index}>{factor}</li>
                         ))}
                       </ul>
                     </div>
                   )}
-                </>
+                </div>
               ) : (
-                <p className="text-gray-700 bg-white p-4 rounded-md border border-gray-200">
-                  Unable to retrieve WHOIS information for this domain.
-                </p>
+                <div className="text-gray-500 italic">
+                  Unable to retrieve domain information
+                </div>
               )}
             </div>
           )}
         </div>
       </div>
 
-      {/* Summary of risk factors */}
-      {allRiskFactors.length > 0 && (
-        <div className="p-4 bg-gray-50 border-t border-gray-200">
-          <h3 className="text-sm font-medium text-gray-900 mb-2">
-            Summary of Concerns:
-          </h3>
-          <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
-            {allRiskFactors.slice(0, 3).map((factor, index) => (
-              <li key={index}>{factor}</li>
-            ))}
-            {allRiskFactors.length > 3 && (
-              <li className="text-gray-500 italic">
-                {allRiskFactors.length - 3} more risk factors detected...
-              </li>
-            )}
-          </ul>
-        </div>
-      )}
-
       {/* Footer with action links */}
-      <div
-        className={`p-4 border-t border-gray-200 ${
-          isDangerous
-            ? "bg-[#fff8f8]"
-            : needsCaution
-            ? "bg-[rgba(250,173,20,0.1)]"
-            : "bg-[rgba(82,196,26,0.1)]"
-        }`}
-      >
-        <div className="flex flex-wrap gap-3">
+      <div className="p-4 border-t border-gray-200 bg-gray-50">
+        <div className="flex flex-wrap gap-3 justify-center">
           <a
             href={`https://www.google.com/search?q=${domain}+reviews+legitimate+or+scam`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center text-sm text-gray-700 hover:text-gray-900 font-medium"
+            className="inline-flex items-center text-sm bg-white px-4 py-2 rounded border border-gray-200 hover:bg-gray-50 transition-colors"
           >
-            <ExternalLink size={14} className="mr-1.5" />
+            <ExternalLink size={14} className="mr-2" />
             Check reviews
           </a>
 
@@ -406,10 +400,10 @@ const Report = ({ score = 100, data }: ReportProps) => {
             href={`https://www.virustotal.com/gui/domain/${domain}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center text-sm text-gray-700 hover:text-gray-900 font-medium"
+            className="inline-flex items-center text-sm bg-white px-4 py-2 rounded border border-gray-200 hover:bg-gray-50 transition-colors"
           >
-            <Shield size={14} className="mr-1.5" />
-            VirusTotal scan
+            <Shield size={14} className="mr-2" />
+            Virus scan
           </a>
 
           {isDangerous && (
@@ -417,10 +411,10 @@ const Report = ({ score = 100, data }: ReportProps) => {
               href={`https://safebrowsing.google.com/safebrowsing/report_phish/?url=${domain}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center text-sm text-[rgb(255,77,79)] hover:text-[rgb(255,30,30)] font-medium"
+              className="inline-flex items-center text-sm bg-red-50 text-red-600 px-4 py-2 rounded border border-red-200 hover:bg-red-100 transition-colors"
             >
-              <AlertTriangle size={14} className="mr-1.5" />
-              Report as phishing
+              <AlertTriangle size={14} className="mr-2" />
+              Report phishing
             </a>
           )}
         </div>

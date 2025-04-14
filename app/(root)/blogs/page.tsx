@@ -149,9 +149,9 @@ export default async function BlogsPage() {
   const regularPosts = posts.filter((post) => !post.featured);
 
   return (
-    <div className="py-8 px-4 max-w-7xl mx-auto">
+    <div className="py-10 px-4 max-w-7xl mx-auto">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-3">
+        <h1 className="text-4xl font-bold mb-3 text-gray-900">
           AI Scam Alert Knowledge Center
         </h1>
         <p className="text-gray-600 max-w-2xl mx-auto">
@@ -165,14 +165,16 @@ export default async function BlogsPage() {
       {/* Trending Topics Section */}
       <div className="mb-10">
         <div className="flex items-center mb-4">
-          <TrendingUp className="w-5 h-5 text-[rgb(255,77,79)] mr-2" />
-          <h2 className="text-xl font-semibold">Trending Topics</h2>
+          <TrendingUp className="w-5 h-5 text-blue-600 mr-2" />
+          <h2 className="text-xl font-semibold text-gray-900">
+            Trending Topics
+          </h2>
         </div>
         <div className="flex flex-wrap gap-2">
           {allTags.map((tag) => (
             <button
               key={tag}
-              className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm hover:bg-[rgba(255,77,79,0.05)] hover:border-[rgb(255,77,79)] transition-colors"
+              className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm hover:bg-[rgba(59,130,246,0.05)] hover:border-blue-500 transition-colors text-gray-700"
             >
               {tag}
             </button>
@@ -184,27 +186,29 @@ export default async function BlogsPage() {
       {featuredPosts.length > 0 && (
         <div className="mb-12">
           <div className="flex items-center mb-6">
-            <AlertTriangle className="w-5 h-5 text-[rgb(255,77,79)] mr-2" />
-            <h2 className="text-xl font-semibold">Urgent Scam Alerts</h2>
+            <AlertTriangle className="w-5 h-5 text-blue-600 mr-2" />
+            <h2 className="text-xl font-semibold text-gray-900">
+              Urgent Scam Alerts
+            </h2>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
             {featuredPosts.map((post) => (
               <article
                 key={post.id}
-                className="border border-[rgba(255,77,79,0.2)] rounded-lg overflow-hidden shadow-md bg-white relative"
+                className="border border-[rgba(59,130,246,0.2)] rounded-lg overflow-hidden shadow-md bg-white relative"
               >
                 <div className="absolute top-4 right-4 z-10">
-                  <span className="bg-[rgb(255,77,79)] text-white text-xs px-2 py-1 rounded-full font-medium">
+                  <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-medium">
                     Featured Alert
                   </span>
                 </div>
 
-                <div className="h-56 bg-[#fff8f8] relative">
+                <div className="h-56 bg-[#f0f7ff] relative">
                   {/* Image placeholder - in production, this would use the actual image URL */}
-                  <div className="w-full h-full bg-[#fff8f8] flex items-center justify-center">
+                  <div className="w-full h-full bg-[#f0f7ff] flex items-center justify-center">
                     <svg
-                      className="w-12 h-12 text-[rgba(255,77,79,0.3)]"
+                      className="w-12 h-12 text-[rgba(59,130,246,0.3)]"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -222,7 +226,7 @@ export default async function BlogsPage() {
 
                 <div className="p-6">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="px-2 py-1 bg-[rgba(255,77,79,0.1)] text-[rgb(255,77,79)] text-xs font-medium rounded">
+                    <span className="px-2 py-1 bg-[rgba(59,130,246,0.1)] text-blue-600 text-xs font-medium rounded">
                       {post.category}
                     </span>
                     <div className="flex items-center text-gray-500 text-xs">
@@ -240,7 +244,7 @@ export default async function BlogsPage() {
 
                   <div className="flex items-center justify-between border-t pt-4 mt-4">
                     <div className="flex items-center">
-                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-2">
+                      <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-2">
                         {post.author.charAt(0)}
                       </div>
                       <div>
@@ -252,7 +256,7 @@ export default async function BlogsPage() {
                     </div>
                     <Link
                       href={`/blogs/${post.slug}`}
-                      className="flex items-center text-[rgb(255,77,79)] hover:underline font-medium"
+                      className="flex items-center text-blue-600 hover:underline font-medium"
                     >
                       Read full analysis{" "}
                       <ChevronRight className="w-4 h-4 ml-1" />
@@ -268,8 +272,10 @@ export default async function BlogsPage() {
       {/* Regular Posts Section */}
       <div>
         <div className="flex items-center mb-6">
-          <Shield className="w-5 h-5 text-[rgb(255,77,79)] mr-2" />
-          <h2 className="text-xl font-semibold">Latest Scam Insights</h2>
+          <Shield className="w-5 h-5 text-blue-600 mr-2" />
+          <h2 className="text-xl font-semibold text-gray-900">
+            Latest Scam Insights
+          </h2>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -278,11 +284,11 @@ export default async function BlogsPage() {
               key={post.id}
               className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white"
             >
-              <div className="h-48 bg-[#fff8f8] relative">
+              <div className="h-48 bg-[#f0f7ff] relative">
                 {/* Image placeholder - in production, this would use the actual image URL */}
-                <div className="w-full h-full bg-[#fff8f8] flex items-center justify-center">
+                <div className="w-full h-full bg-[#f0f7ff] flex items-center justify-center">
                   <svg
-                    className="w-12 h-12 text-[rgba(255,77,79,0.3)]"
+                    className="w-12 h-12 text-[rgba(59,130,246,0.3)]"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -300,7 +306,7 @@ export default async function BlogsPage() {
 
               <div className="p-5">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2 py-1 bg-[rgba(255,77,79,0.1)] text-[rgb(255,77,79)] text-xs font-medium rounded">
+                  <span className="px-2 py-1 bg-[rgba(59,130,246,0.1)] text-blue-600 text-xs font-medium rounded">
                     {post.category}
                   </span>
                   <div className="flex items-center text-gray-500 text-xs">
@@ -339,7 +345,7 @@ export default async function BlogsPage() {
                   </time>
                   <Link
                     href={`/blogs/${post.slug}`}
-                    className="text-[rgb(255,77,79)] hover:underline text-sm font-medium"
+                    className="text-blue-600 hover:underline text-sm font-medium"
                   >
                     Read more →
                   </Link>
@@ -351,8 +357,10 @@ export default async function BlogsPage() {
       </div>
 
       {/* Newsletter Signup */}
-      <div className="mt-16 bg-[#fff8f8] border border-[rgba(255,77,79,0.2)] rounded-lg p-8 text-center">
-        <h3 className="text-2xl font-bold mb-3">Stay Protected</h3>
+      <div className="mt-16 bg-[#f0f7ff] border border-[rgba(59,130,246,0.2)] rounded-lg p-8 text-center">
+        <h3 className="text-2xl font-bold mb-3 text-gray-900">
+          Stay Protected
+        </h3>
         <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
           Subscribe to our weekly scam alert newsletter and get timely warnings
           about emerging threats before they reach the mainstream news.
@@ -361,9 +369,9 @@ export default async function BlogsPage() {
           <input
             type="email"
             placeholder="Your email address"
-            className="flex-grow border border-gray-300 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[rgb(255,77,79)]"
+            className="flex-grow border border-gray-300 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
-          <button className="bg-[rgb(255,77,79)] text-white px-6 py-2 rounded-r-lg hover:bg-[rgb(230,60,60)] transition-colors">
+          <button className="bg-blue-600 text-white px-6 py-2 rounded-r-lg hover:bg-blue-700 transition-colors">
             Subscribe
           </button>
         </div>

@@ -10,38 +10,52 @@ interface RequestBody {
   domain: string;
 }
 
+interface SecurityDetails {
+  safeBrowsing: {
+    isMalicious: boolean;
+    error?: boolean;
+    message?: string;
+    matches?: Array<{
+      threatType: string;
+      platformType: string;
+      threat: { url: string };
+      cacheDuration: string;
+      threatEntryType: string;
+    }>;
+  };
+  whois: {
+    data: {
+      domainAge?: number;
+      creationDate?: string;
+      expirationDate?: string;
+      registrar?: string;
+      registrantName?: string;
+      registrantOrganization?: string;
+      privacyProtected?: boolean;
+    };
+    error?: boolean;
+    message?: string;
+    riskFactors?: string[];
+  };
+  patternAnalysis: {
+    riskFactors: string[];
+    suspiciousScore: number;
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
-    // Parse the request body
-    const body: RequestBody = await request.json();
-    const domain = body.domain?.trim();
-
-    // Validate domain input
-    if (!domain) {
-      return NextResponse.json(
-        { error: "Domain is required" },
-        { status: 400 }
-      );
-    }
-
-    // Clean the domain (remove protocol, www, etc.)
-    const cleanDomain = domain
-      .replace(/^https?:\/\//i, "")
-      .replace(/^www\./i, "")
-      .split("/")[0];
+    const body = (await request.json()) as RequestBody;
+    const cleanDomain = body.domain.trim().toLowerCase();
 
     // Initialize security details object
-    const securityDetails: any = {
-      safeBrowsing: null,
-      whois: null,
-      patternAnalysis: null,
-    };
+    const securityDetails: Partial<SecurityDetails> = {};
 
-    // Perform all checks in parallel
+    // Run security checks in parallel
     const [safeBrowsingResult, whoisResult, patternAnalysis] =
       await Promise.all([
         checkSafeBrowsing(cleanDomain).catch((error) => {
-          console.error("Safe Browsing API error:", error);
+          console.error("Safe Browsing error:", error);
           return {
             isMalicious: false,
             error: true,
@@ -67,27 +81,22 @@ export async function POST(request: NextRequest) {
     // Calculate comprehensive security score
     const score = calculateSecurityScore(securityDetails);
 
-    // Generate AI summary
-    const aiAnalysis = await generateAISummary(
-      cleanDomain,
-      securityDetails
-    ).catch((error) => {
+    // Generate AI summary with the correct data structure
+    const aiSummary = await generateAISummary({
+      domain: cleanDomain,
+      score,
+      safeBrowsing: securityDetails.safeBrowsing,
+      whois: securityDetails.whois,
+    }).catch((error) => {
       console.error("AI summary error:", error);
-      return { summary: null, score: null };
+      return null;
     });
-
-    // Use AI score if available to enhance our calculation
-    let finalScore = score;
-    if (aiAnalysis.score !== null) {
-      // Weighted average: 60% AI score, 40% our algorithmic score
-      finalScore = Math.round(0.6 * aiAnalysis.score + 0.4 * score);
-    }
 
     // Format the response
     return NextResponse.json({
       domain: cleanDomain,
-      score: finalScore,
-      aiSummary: aiAnalysis.summary,
+      score,
+      aiSummary,
       details: securityDetails,
       analysisDate: new Date().toISOString(),
     });
@@ -105,59 +114,36 @@ export async function POST(request: NextRequest) {
  * @param securityDetails Object containing security check results
  * @returns A score from 0-100 where higher is safer
  */
-function calculateSecurityScore(securityDetails: any): number {
-  let score = 100; // Start with perfect score and subtract for issues
+function calculateSecurityScore(
+  securityDetails: Partial<SecurityDetails>
+): number {
+  let score = 100;
 
-  // Safe Browsing check (severe penalty if flagged)
+  // Safe Browsing penalties
   if (securityDetails.safeBrowsing?.isMalicious) {
-    score -= 60; // Major penalty for being flagged by Google
+    score -= 60; // Heavy penalty for known malicious sites
   }
 
-  // WHOIS data checks
+  // WHOIS-based penalties
   if (securityDetails.whois?.data) {
-    const whoisData = securityDetails.whois.data;
-
-    // Domain age checks (newer domains are riskier)
-    if (whoisData.domainAge !== undefined) {
-      if (whoisData.domainAge < 30) {
-        score -= 30; // Very new domain
-      } else if (whoisData.domainAge < 90) {
-        score -= 20; // Relatively new domain
-      } else if (whoisData.domainAge < 180) {
-        score -= 10; // Moderately new domain
-      } else if (whoisData.domainAge < 365) {
-        score -= 5; // Less than a year old
-      }
+    const domainAge = securityDetails.whois.data.domainAge || 0;
+    if (domainAge < 30) {
+      score -= 30; // Very new domains are suspicious
+    } else if (domainAge < 90) {
+      score -= 20; // Newer domains get a smaller penalty
+    } else if (domainAge < 180) {
+      score -= 10; // Small penalty for domains under 6 months
     }
 
-    // Privacy protection (slight penalty, legitimate sites use these too)
-    if (whoisData.privacyProtected) {
-      score -= 5;
+    if (securityDetails.whois.data.privacyProtected) {
+      score -= 10; // Small penalty for privacy protection (could be legitimate but also used by scammers)
     }
-
-    // Missing registrar or registrant information
-    if (!whoisData.registrar) {
-      score -= 5;
-    }
-    if (!whoisData.registrantName && !whoisData.registrantOrganization) {
-      score -= 5;
-    }
-  } else {
-    // Couldn't get WHOIS data at all
-    score -= 10;
   }
 
-  // WHOIS risk factors from analysis
-  if (securityDetails.whois?.riskFactors) {
-    score -= securityDetails.whois.riskFactors.length * 5; // 5 points per risk factor
-  }
-
-  // Pattern analysis from domain name
-  if (securityDetails.patternAnalysis) {
-    // Apply the suspiciousScore from pattern analysis
-    score -= securityDetails.patternAnalysis.suspiciousScore;
-  }
+  // Pattern analysis penalties
+  const suspiciousScore = securityDetails.patternAnalysis?.suspiciousScore || 0;
+  score -= suspiciousScore;
 
   // Ensure score stays within 0-100 range
-  return Math.max(0, Math.min(100, Math.round(score)));
+  return Math.max(0, Math.min(100, score));
 }

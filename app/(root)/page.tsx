@@ -17,19 +17,19 @@ import Link from "next/link";
 const page = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 py-8 px-4">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         {/* Enhanced AI header */}
         <div className="text-center mb-12">
-          <div className="inline-block bg-[rgba(255,77,79,0.1)] px-3 py-1 rounded-full text-[rgb(255,77,79)] text-sm font-medium mb-3">
+          <div className="inline-block bg-blue-50 px-3 py-1 rounded-full text-blue-600 text-sm font-medium mb-3">
             <Bot className="w-4 h-4 inline mr-1" /> Powered by Advanced AI
           </div>
           <div className="flex items-center justify-center mb-4">
-            <Shield className="w-10 h-10 text-[rgb(255,77,79)] mr-2" />
+            <Shield className="w-10 h-10 text-blue-600 mr-2" />
             <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-100">
-              <span className="text-[rgb(255,77,79)]">AI</span> Scam Alert
+              <span className="text-blue-600">AI</span> Scam Alert
             </h1>
           </div>
-          <p className="text-gray-600 dark:text-gray-400 max-w-lg mx-auto text-lg">
+          <p className="text-gray-600 dark:text-gray-400 max-w-xl mx-auto text-lg">
             Using artificial intelligence to detect and protect you from
             sophisticated online scams.
           </p>
@@ -41,15 +41,15 @@ const page = () => {
         </div>
 
         {/* AI Features highlight - New section */}
-        <div className="mb-12 bg-gradient-to-r from-[rgba(255,77,79,0.05)] to-white p-6 rounded-lg border border-[rgba(255,77,79,0.2)]">
+        <div className="mb-12 bg-gradient-to-r from-blue-50 to-white p-6 rounded-lg border border-blue-100">
           <h2 className="text-xl font-semibold text-gray-800 mb-6 text-center flex items-center justify-center">
-            <Brain className="w-5 h-5 mr-2 text-[rgb(255,77,79)]" />
+            <Brain className="w-5 h-5 mr-2 text-blue-600" />
             Our AI-Powered Security Features
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
             <div className="text-center">
               <div className="bg-white rounded-full w-14 h-14 mx-auto mb-3 flex items-center justify-center shadow-sm">
-                <Zap className="w-6 h-6 text-[rgb(255,77,79)]" />
+                <Zap className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="font-medium text-gray-900 mb-1">
                 Real-time Analysis
@@ -60,7 +60,7 @@ const page = () => {
             </div>
             <div className="text-center">
               <div className="bg-white rounded-full w-14 h-14 mx-auto mb-3 flex items-center justify-center shadow-sm">
-                <Bot className="w-6 h-6 text-[rgb(255,77,79)]" />
+                <Bot className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="font-medium text-gray-900 mb-1">Deep Learning</h3>
               <p className="text-sm text-gray-600">
@@ -69,7 +69,7 @@ const page = () => {
             </div>
             <div className="text-center">
               <div className="bg-white rounded-full w-14 h-14 mx-auto mb-3 flex items-center justify-center shadow-sm">
-                <Brain className="w-6 h-6 text-[rgb(255,77,79)]" />
+                <Brain className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="font-medium text-gray-900 mb-1">
                 Predictive Defense
@@ -82,17 +82,15 @@ const page = () => {
         </div>
 
         {/* Quick stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <div className="bg-white border border-gray-100 rounded-lg p-4 text-center shadow-sm">
-            <p className="text-2xl font-semibold text-[rgb(255,77,79)]">
-              $1+ Trillion
-            </p>
+            <p className="text-2xl font-semibold text-blue-600">$1+ Trillion</p>
             <p className="text-sm text-gray-500">
               Global losses to scams in 2024
             </p>
           </div>
           <div className="bg-white border border-gray-100 rounded-lg p-4 text-center shadow-sm">
-            <p className="text-2xl font-semibold text-[rgb(255,77,79)]">
+            <p className="text-2xl font-semibold text-blue-600">
               $12.5 Billion
             </p>
             <p className="text-sm text-gray-500">
@@ -100,7 +98,7 @@ const page = () => {
             </p>
           </div>
           <div className="bg-white border border-gray-100 rounded-lg p-4 text-center shadow-sm">
-            <p className="text-2xl font-semibold text-[rgb(255,77,79)]">85%</p>
+            <p className="text-2xl font-semibold text-blue-600">85%</p>
             <p className="text-sm text-gray-500">People faced scam attempts</p>
           </div>
         </div>
@@ -110,12 +108,12 @@ const page = () => {
           <h2 className="text-xl font-medium text-gray-800 mb-4 text-center">
             Emerging Scam Trends to Watch For
           </h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="bg-[#fff8f8] p-4 rounded-lg border border-gray-100">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-red-50 p-5 rounded-lg border border-red-100">
               <div className="flex items-start">
-                <AlertTriangle className="w-5 h-5 text-[rgb(255,77,79)] mt-1 mr-2 flex-shrink-0" />
+                <AlertTriangle className="w-5 h-5 text-red-600 mt-1 mr-3 flex-shrink-0" />
                 <div>
-                  <h3 className="font-medium text-gray-900 mb-1">
+                  <h3 className="font-medium text-gray-900 mb-2">
                     AI-Driven Scams
                   </h3>
                   <p className="text-sm text-gray-600">
@@ -125,11 +123,11 @@ const page = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-[#fff8f8] p-4 rounded-lg border border-gray-100">
+            <div className="bg-red-50 p-5 rounded-lg border border-red-100">
               <div className="flex items-start">
-                <AlertTriangle className="w-5 h-5 text-[rgb(255,77,79)] mt-1 mr-2 flex-shrink-0" />
+                <AlertTriangle className="w-5 h-5 text-red-600 mt-1 mr-3 flex-shrink-0" />
                 <div>
-                  <h3 className="font-medium text-gray-900 mb-1">
+                  <h3 className="font-medium text-gray-900 mb-2">
                     Pig Butchering Scams
                   </h3>
                   <p className="text-sm text-gray-600">
@@ -144,13 +142,13 @@ const page = () => {
 
         {/* How it works section */}
         <div className="mb-12 bg-white p-6 rounded-lg border border-gray-100 shadow-sm">
-          <h2 className="text-xl font-medium text-gray-800 mb-4 text-center flex items-center justify-center">
-            <Brain className="w-5 h-5 mr-2 text-[rgb(255,77,79)]" />
+          <h2 className="text-xl font-medium text-gray-800 mb-6 text-center flex items-center justify-center">
+            <Brain className="w-5 h-5 mr-2 text-blue-600" />
             How Our AI Scanner Works
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-5">
             <div className="flex items-start">
-              <div className="w-6 h-6 rounded-full bg-[rgba(255,77,79,0.1)] text-[rgb(255,77,79)] flex items-center justify-center mr-3 flex-shrink-0">
+              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-3 flex-shrink-0">
                 1
               </div>
               <div>
@@ -161,7 +159,7 @@ const page = () => {
               </div>
             </div>
             <div className="flex items-start">
-              <div className="w-6 h-6 rounded-full bg-[rgba(255,77,79,0.1)] text-[rgb(255,77,79)] flex items-center justify-center mr-3 flex-shrink-0">
+              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-3 flex-shrink-0">
                 2
               </div>
               <div>
@@ -172,7 +170,7 @@ const page = () => {
               </div>
             </div>
             <div className="flex items-start">
-              <div className="w-6 h-6 rounded-full bg-[rgba(255,77,79,0.1)] text-[rgb(255,77,79)] flex items-center justify-center mr-3 flex-shrink-0">
+              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-3 flex-shrink-0">
                 3
               </div>
               <div>
@@ -183,7 +181,7 @@ const page = () => {
               </div>
             </div>
             <div className="flex items-start">
-              <div className="w-6 h-6 rounded-full bg-[rgba(255,77,79,0.1)] text-[rgb(255,77,79)] flex items-center justify-center mr-3 flex-shrink-0">
+              <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-3 flex-shrink-0">
                 4
               </div>
               <div>
@@ -198,17 +196,17 @@ const page = () => {
 
         {/* Call to action */}
         <div className="text-center mb-12">
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-5 justify-center">
             <Link
               href="/guide"
-              className="inline-flex items-center justify-center px-5 py-3 border border-[rgb(255,77,79)] rounded-lg text-[rgb(255,77,79)] hover:bg-[rgba(255,77,79,0.05)] transition-colors"
+              className="inline-flex items-center justify-center px-6 py-3 border border-blue-600 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
             >
               <CheckCircle className="w-4 h-4 mr-2" />
               View Scam Prevention Guide
             </Link>
             <Link
               href="/blogs"
-              className="inline-flex items-center justify-center px-5 py-3 bg-[rgb(255,77,79)] text-white rounded-lg hover:bg-[rgb(255,30,30)] transition-colors"
+              className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <ExternalLink className="w-4 h-4 mr-2" />
               Read Latest Scam Alerts
