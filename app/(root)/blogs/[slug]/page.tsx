@@ -8,6 +8,9 @@ import ClientCommentsWrapper from "@/components/ClientCommentsWrapper";
 import ShareButtons from "@/components/ShareButtons";
 import { headers } from "next/headers";
 
+// Mark this page for dynamic rendering to avoid build errors
+export const dynamic = 'force-dynamic';
+
 // Helper function to safely format dates
 const formatDate = (dateString: string | null | undefined) => {
   if (!dateString) return "Invalid date";
@@ -31,8 +34,14 @@ export default async function BlogPostPage({
   // Access params directly since we're not using React.use() anymore
   const { slug } = params;
 
-  // Fetch blog post data
-  const post = await getBlogPostBySlug(slug);
+  // Fetch blog post data with error handling
+  let post = null;
+  try {
+    post = await getBlogPostBySlug(slug);
+  } catch (error) {
+    console.error(`Error fetching blog post with slug ${slug}:`, error);
+    // Continue with post as null, which will show the not found view
+  }
 
   // Get the current URL for sharing
   const headersList = headers();

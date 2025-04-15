@@ -229,15 +229,15 @@ export async function getDomainSearchCount(domain: string): Promise<number> {
     const { data, error } = await supabase
       .from("domain_searches")
       .select("search_count")
-      .eq("domain", domain.toLowerCase().trim())
-      .single();
+      .eq("domain", domain.toLowerCase().trim());
 
     if (error) {
       console.error("Error retrieving domain search count:", error);
       return 0;
     }
 
-    return data?.search_count || 0;
+    // Return the search count if found, otherwise return 0
+    return data && data.length > 0 ? data[0].search_count : 0;
   } catch (error) {
     console.error("Failed to get domain search count:", error);
     return 0;
@@ -281,15 +281,14 @@ export async function getDomainScreenshot(
     const { data, error } = await supabase
       .from("domain_searches")
       .select("screenshot")
-      .eq("domain", domain.toLowerCase().trim())
-      .single();
+      .eq("domain", domain.toLowerCase().trim());
 
-    if (error || !data) {
+    if (error || !data || data.length === 0) {
       console.error("Error retrieving domain screenshot:", error);
       return null;
     }
 
-    return data.screenshot;
+    return data[0]?.screenshot || null;
   } catch (error) {
     console.error("Failed to get domain screenshot:", error);
     return null;

@@ -19,6 +19,19 @@ interface InputScamProps {
   onResultsChange?: (hasResults: boolean) => void;
 }
 
+// Create a separate client component for the clear button
+function ClearButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+    >
+      <X size={16} />
+    </button>
+  );
+}
+
 const InputScam = ({ onResultsChange }: InputScamProps) => {
   const [loading, setLoading] = useState(false);
   const [score, setScore] = useState<number | null>(null);
@@ -123,15 +136,7 @@ const InputScam = ({ onResultsChange }: InputScamProps) => {
                           placeholder={`Enter a domain (e.g., ${placeholderExamples[currentPlaceholder]})`}
                           {...field}
                         />
-                        {field.value && (
-                          <button
-                            type="button"
-                            onClick={resetForm}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                          >
-                            <X size={16} />
-                          </button>
-                        )}
+                        {field.value && <ClearButton onClick={resetForm} />}
                       </div>
                     </FormControl>
                   </FormItem>

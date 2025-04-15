@@ -16,10 +16,8 @@ const nextConfig: NextConfig = {
   // Configure route handling for Vercel deployment
   trailingSlash: false,
   
-  // Explicitly set the app directory
-  experimental: {
-    appDir: true,
-  },
+  // Handle the API routes that make fetch calls during build
+  output: 'standalone'
 };
 
 export default nextConfig;

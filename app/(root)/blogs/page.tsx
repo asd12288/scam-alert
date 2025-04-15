@@ -10,6 +10,9 @@ import {
 import { getBlogPosts } from "@/lib/supabase";
 import { format, isValid, parseISO } from "date-fns";
 
+// Mark the page as dynamically rendered to avoid build-time fetching errors
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: "Blogs | AI Scam Alert",
   description:
@@ -30,7 +33,13 @@ const formatDate = (dateString: string) => {
 
 export default async function BlogsPage() {
   // Fetch published blog posts
-  const posts = await getBlogPosts({ onlyPublished: true });
+  let posts = [];
+  try {
+    posts = await getBlogPosts({ onlyPublished: true });
+  } catch (error) {
+    console.error("Error fetching blog posts:", error);
+    // Continue with empty posts array
+  }
 
   // Extract tags from all posts
   const allTags = Array.from(new Set(posts.flatMap((post) => post.tags || [])));
@@ -54,7 +63,6 @@ export default async function BlogsPage() {
       </div>
 
       {posts.length === 0 ? (
-        /* Content Placeholder when no posts exist */
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 text-center">
           <Shield className="w-12 h-12 text-blue-600 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-3">
@@ -73,7 +81,6 @@ export default async function BlogsPage() {
           </Link>
         </div>
       ) : (
-        /* Blog posts display when posts exist */
         <div className="space-y-16">
           {/* Featured Posts Section */}
           {featuredPosts.length > 0 && (
