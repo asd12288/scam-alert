@@ -2,7 +2,7 @@ import OpenAI from "openai";
 
 // Initialize OpenAI client with environment variable
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY_PERSONAL 
+  apiKey: process.env.OPENAI_API_KEY_PERSONAL,
 });
 
 // List of well-known trusted domains
@@ -148,6 +148,7 @@ interface SafeBrowsingMatch {
   threatEntryType: string;
 }
 
+// Update the SecurityData interface to include SSL info
 interface SecurityData {
   domain: string;
   score: number;
@@ -166,6 +167,16 @@ interface SecurityData {
       privacyProtected?: boolean;
     };
     riskFactors?: string[];
+  };
+  ssl?: {
+    valid: boolean;
+    daysRemaining?: number;
+    validFrom?: string;
+    validTo?: string;
+    issuer?: string;
+    validForHost?: boolean;
+    error?: boolean;
+    message?: string;
   };
 }
 
@@ -244,7 +255,7 @@ function generateTrustedDomainResponse(domainInfo: {
  * Creates a prompt for the LLM based on security data
  */
 function createSecurityPrompt(data: SecurityData): string {
-  const { domain, score, safeBrowsing, whois } = data;
+  const { domain, score, safeBrowsing, whois, ssl } = data;
 
   const isNewDomain = whois?.data?.domainAge && whois.data.domainAge < 90;
   const hasPrivacyProtection = whois?.data?.privacyProtected;
@@ -261,6 +272,28 @@ Key information:
       ? "❗ FLAGGED AS MALICIOUS"
       : "✓ No threats detected"
   }`;
+
+  if (ssl) {
+    prompt += `\n- SSL Certificate: ${
+      ssl.valid ? "✓ Valid" : "❗ Invalid or missing"
+    }`;
+
+    if (ssl.valid && ssl.daysRemaining !== undefined) {
+      prompt += ` (${ssl.daysRemaining} days remaining${
+        ssl.issuer ? `, issued by ${ssl.issuer}` : ""
+      })`;
+
+      if (ssl.daysRemaining < 30) {
+        prompt += `\n- ❗ RISK FACTOR: SSL certificate expires soon (${ssl.daysRemaining} days)`;
+      } else if (ssl.daysRemaining > 180) {
+        prompt += `\n- POSITIVE FACTOR: SSL certificate has long validity`;
+      }
+    }
+
+    if (!ssl.valid) {
+      prompt += `\n- ❗ RISK FACTOR: Invalid or missing SSL certificate`;
+    }
+  }
 
   if (whois?.data) {
     prompt += `\n- Domain age: ${
@@ -330,7 +363,7 @@ export async function generateAISummary(data: SecurityData): Promise<string> {
  * Fallback summary generator when AI is not available
  */
 function generateFallbackSummary(data: SecurityData): string {
-  const { domain, score, safeBrowsing, whois } = data;
+  const { domain, score, safeBrowsing, whois, ssl } = data;
 
   const trustedDomainInfo = checkTrustedDomain(domain);
   if (trustedDomainInfo) {
@@ -340,11 +373,26 @@ function generateFallbackSummary(data: SecurityData): string {
   const isNewDomain = whois?.data?.domainAge && whois.data.domainAge < 90;
   const hasPrivacyProtection = whois?.data?.privacyProtected;
   const isMalicious = safeBrowsing?.isMalicious || false;
+  const hasInvalidSSL = ssl && !ssl.valid;
+  const sslExpiringSoon =
+    ssl?.valid && ssl.daysRemaining !== undefined && ssl.daysRemaining < 30;
 
   const bullets = [];
 
   if (isMalicious) {
     bullets.push("🔴 Flagged as potentially malicious by Google Safe Browsing");
+  }
+
+  if (hasInvalidSSL) {
+    bullets.push(
+      "🔴 Missing or invalid SSL certificate (connection not secure)"
+    );
+  } else if (sslExpiringSoon) {
+    bullets.push(
+      `🟠 SSL certificate expires soon (${ssl?.daysRemaining} days remaining)`
+    );
+  } else if (ssl?.valid) {
+    bullets.push("🟢 Valid SSL certificate (secure connection)");
   }
 
   if (isNewDomain) {

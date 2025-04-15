@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Form, FormControl, FormField, FormItem } from "./ui/form";
 import { Input } from "./ui/input";
@@ -15,7 +15,11 @@ const formSchema = z.object({
   domain: z.string().min(3, "Domain is required"),
 });
 
-const InputScam = () => {
+interface InputScamProps {
+  onResultsChange?: (hasResults: boolean) => void;
+}
+
+const InputScam = ({ onResultsChange }: InputScamProps) => {
   const [loading, setLoading] = useState(false);
   const [score, setScore] = useState<number | null>(null);
   const [domainData, setDomainData] = useState<any>(null);
@@ -27,6 +31,12 @@ const InputScam = () => {
       domain: "",
     },
   });
+
+  // Notify parent component when results status changes
+  useEffect(() => {
+    const hasResults = score !== null || error !== null;
+    onResultsChange?.(hasResults);
+  }, [score, error, onResultsChange]);
 
   const resetForm = () => {
     form.reset();
@@ -94,8 +104,6 @@ const InputScam = () => {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      
-
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="flex flex-col">

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/ui/Header";
+import Footer from "@/components/ui/Footer";
+import { AuthProvider } from "@/lib/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Scam Alert",
-  description: "AI-powered protection against online scams and fraud",
+  title: "AI Scam Alert - Detect Online Scams",
+  description: "Using AI to help you avoid online scams and phishing attacks",
 };
 
 export default function RootLayout({
@@ -26,10 +28,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
-        <Header />
-        <main className="container mx-auto px-4">{children}</main>
+        <AuthProvider>
+          <Header />
+          <main className="container mx-auto px-4">{children}</main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

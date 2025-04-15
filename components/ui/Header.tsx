@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import {
   Home,
@@ -10,10 +10,28 @@ import {
   Shield,
   Menu,
   X,
+  LogIn,
+  User,
+  LogOut,
+  ChevronDown,
+  Search,
 } from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
+import { signOut } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/");
+    router.refresh();
+    setIsProfileMenuOpen(false);
+  };
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -31,11 +49,15 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
-            <NavLink
+            {/* Scan button - Most prominent */}
+            <Link
               href="/"
-              icon={<Home className="w-4 h-4" />}
-              label="Home"
-            />
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 flex items-center transition-colors mr-3"
+            >
+              <Search className="w-4 h-4 mr-2" />
+              <span>Scan Website</span>
+            </Link>
+
             <NavLink
               href="/guide"
               icon={<BookOpen className="w-4 h-4" />}
@@ -46,13 +68,67 @@ const Header = () => {
               icon={<FileText className="w-4 h-4" />}
               label="Blog"
             />
-            <Link
-              href="/"
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 flex items-center transition-colors ml-2"
-            >
-              <AlertTriangle className="w-4 h-4 mr-2" />
-              <span>Report Scam</span>
-            </Link>
+            <NavLink
+              href="/report"
+              icon={<AlertTriangle className="w-4 h-4" />}
+              label="Report Scam"
+            />
+
+            {/* User Authentication */}
+            {!loading && (
+              <>
+                {user ? (
+                  <div className="relative ml-4">
+                    <button
+                      onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                      className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 rounded-lg px-3 py-2 text-sm font-medium transition-colors border border-gray-200 hover:border-blue-200"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                        <User className="w-3 h-3" />
+                      </div>
+                      <span>Account</span>
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+
+                    {isProfileMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-200 z-50">
+                        <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-100">
+                          <div className="font-medium">
+                            {user.user_metadata.name || user.email}
+                          </div>
+                          <div className="text-xs text-gray-500 truncate">
+                            {user.email}
+                          </div>
+                        </div>
+                        <Link
+                          href="/profile"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                        >
+                          <User className="w-4 h-4 mr-2 text-gray-500" />
+                          Profile
+                        </Link>
+                        <button
+                          onClick={handleSignOut}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                        >
+                          <LogOut className="w-4 h-4 mr-2 text-gray-500" />
+                          Sign out
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="text-blue-600 border border-blue-200 hover:bg-blue-50 rounded-lg px-3 py-2 text-sm font-medium flex items-center transition-colors ml-3"
+                  >
+                    <LogIn className="w-4 h-4 mr-1.5" />
+                    Sign in
+                  </Link>
+                )}
+              </>
+            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -77,11 +153,17 @@ const Header = () => {
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-4 space-y-1 border-t border-gray-100">
-            <MobileNavLink
-              href="/"
-              label="Home"
-              icon={<Home className="w-5 h-5" />}
-            />
+            {/* Primary action first for mobile */}
+            <div className="pt-2 mb-3">
+              <Link
+                href="/"
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-3 flex items-center transition-colors w-full"
+              >
+                <Search className="w-5 h-5 mr-2" />
+                <span>Scan Website</span>
+              </Link>
+            </div>
+
             <MobileNavLink
               href="/guide"
               label="Scam Guide"
@@ -92,15 +174,56 @@ const Header = () => {
               label="Blog Articles"
               icon={<FileText className="w-5 h-5" />}
             />
-            <div className="pt-2 mt-3 border-t border-gray-100">
-              <Link
-                href="/"
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-3 flex items-center transition-colors w-full"
-              >
-                <AlertTriangle className="w-5 h-5 mr-2" />
-                <span>Report a Possible Scam</span>
-              </Link>
-            </div>
+            <MobileNavLink
+              href="/report"
+              label="Report a Scam"
+              icon={<AlertTriangle className="w-5 h-5" />}
+            />
+
+            {/* Mobile Authentication Links */}
+            {!loading && (
+              <>
+                {user ? (
+                  <>
+                    <div className="px-3 py-2.5 border-t border-gray-100 mt-2 pt-2">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                          <User className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium">
+                            {user.user_metadata.name || "User"}
+                          </div>
+                          <div className="text-xs text-gray-500 truncate">
+                            {user.email}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <MobileNavLink
+                      href="/profile"
+                      label="Profile"
+                      icon={<User className="w-5 h-5" />}
+                    />
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full text-left text-gray-700 hover:text-blue-600 hover:bg-blue-50 block rounded-lg px-3 py-2.5 text-base font-medium flex items-center"
+                    >
+                      <span className="mr-3 text-gray-500">
+                        <LogOut className="w-5 h-5" />
+                      </span>
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <MobileNavLink
+                    href="/login"
+                    label="Sign in"
+                    icon={<LogIn className="w-5 h-5" />}
+                  />
+                )}
+              </>
+            )}
           </div>
         </div>
       )}
