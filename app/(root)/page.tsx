@@ -6,7 +6,7 @@ import { Shield } from "lucide-react";
 
 const Page = () => {
   const [hasResults, setHasResults] = useState(false);
-  
+
   // Adjust the page height based on whether search results are displayed
   useEffect(() => {
     if (hasResults) {
@@ -16,7 +16,7 @@ const Page = () => {
       document.body.style.overflowY = "hidden";
       document.body.style.height = "100vh";
     }
-    
+
     return () => {
       // Cleanup function to reset styles when component unmounts
       document.body.style.overflowY = "auto";
@@ -25,7 +25,11 @@ const Page = () => {
   }, [hasResults]);
 
   return (
-    <div className={`${hasResults ? 'min-h-screen' : 'h-screen'} bg-white dark:bg-gray-900 flex items-center justify-center py-8 px-4`}>
+    <div
+      className={`${
+        hasResults ? "min-h-screen" : "h-screen"
+      } bg-white dark:bg-gray-900 flex items-center justify-center py-8 px-4`}
+    >
       <div className="max-w-xl w-full mx-auto">
         {/* Simple centered content */}
         <div className="text-center mb-10">

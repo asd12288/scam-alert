@@ -38,6 +38,7 @@ export async function analyzeDNS(domain: string): Promise<DNSAnalysisResult> {
         result.securityScore += 5; // Legitimate domains typically have MX records
       }
     } catch (error) {
+      // Ignore specific error - just means no MX records
       result.riskFactors.push("Failed to retrieve MX records");
     }
 
@@ -58,6 +59,7 @@ export async function analyzeDNS(domain: string): Promise<DNSAnalysisResult> {
         result.riskFactors.push("Domain has no SPF record for email security");
       }
     } catch (error) {
+      // Ignore specific error - just means no TXT records
       result.riskFactors.push("Failed to retrieve TXT records");
     }
 
