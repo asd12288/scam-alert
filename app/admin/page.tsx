@@ -11,9 +11,11 @@ import {
   Plus,
   Edit,
   ChevronRight,
+  Settings,
 } from "lucide-react";
 import Link from "next/link";
-import { getBlogPosts, BlogPost } from "@/lib/supabase";
+import { getBlogPosts } from "@/lib/services/blogService";
+import type { BlogPost } from "@/lib/services/blogService";
 
 export default function AdminDashboard() {
   const { profile } = useAuth();
@@ -193,7 +195,7 @@ export default function AdminDashboard() {
         <h2 className="text-xl font-semibold mb-4 text-gray-800">
           Quick Actions
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link
             href="/admin/blogs/new"
             className="bg-blue-500 text-white p-5 rounded-lg shadow-sm text-left hover:bg-blue-600 hover:shadow transition-all"
@@ -229,6 +231,19 @@ export default function AdminDashboard() {
               Manage Users
             </h3>
             <p className="text-sm text-gray-500">Add or remove user accounts</p>
+          </Link>
+
+          <Link
+            href="/admin/settings"
+            className="bg-white p-5 rounded-lg shadow-sm border border-gray-100 text-left hover:border-blue-500 hover:shadow transition-all"
+          >
+            <h3 className="font-medium mb-1 flex items-center">
+              <Settings className="w-5 h-5 mr-2" />
+              System Settings
+            </h3>
+            <p className="text-sm text-gray-500">
+              Configure scoring weights and more
+            </p>
           </Link>
         </div>
       </div>

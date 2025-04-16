@@ -96,7 +96,10 @@ const SecurityReport: React.FC<SecurityReportProps> = ({
     suspiciousScore: 0,
   };
   const ssl = data?.details?.ssl || { valid: false };
-  const searchCount = data?.searchCount || 0;
+  const searchCount =
+    typeof data?.searchCount === "number" && !isNaN(data.searchCount)
+      ? data.searchCount
+      : 0;
   const isCached = data?.cached || false;
 
   // Format dates for better readability

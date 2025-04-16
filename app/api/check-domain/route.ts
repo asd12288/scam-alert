@@ -12,60 +12,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Ensure the domain has a protocol for the API request
-    const url = domain.startsWith("http") ? domain : `https://${domain}`;
-
-    // Google Safe Browsing API v4 endpoint
-    const apiEndpoint =
-      "https://safebrowsing.googleapis.com/v4/threatMatches:find";
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_SAFE_BROWSING_API_KEY;
-
-    if (!apiKey) {
-      console.error("Google Safe Browsing API key is not configured");
-      return NextResponse.json(
-        { error: "API configuration error" },
-        { status: 500 }
-      );
-    }
-
-    // Prepare the request body according to Google Safe Browsing API v4 documentation
-    const requestBody = {
-      client: {
-        clientId: "domain-safety-checker",
-        clientVersion: "1.0.0",
-      },
-      threatInfo: {
-        threatTypes: [
-          "MALWARE",
-          "SOCIAL_ENGINEERING",
-          "UNWANTED_SOFTWARE",
-          "POTENTIALLY_HARMFUL_APPLICATION",
-        ],
-        platformTypes: ["ANY_PLATFORM"],
-        threatEntryTypes: ["URL"],
-        threatEntries: [{ url }],
-      },
-    };
-
-    // Make the request to Google Safe Browsing API
-    const response = await axios.post(
-      `${apiEndpoint}?key=${apiKey}`,
-      requestBody
+    // Forward the request to the main domain analysis endpoint
+    // This ensures consistent scoring across all API routes
+    const response = await fetch(
+      `${request.nextUrl.origin}/api/domain-analysis/analyze`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain }),
+      }
     );
 
-    // Process the response
-    const matches = response.data.matches || [];
-    const isMalicious = matches.length > 0;
+    if (!response.ok) {
+      throw new Error(`Domain analysis failed with status: ${response.status}`);
+    }
 
-    // Calculate a score based on whether the domain is malicious
-    const score = isMalicious ? 20 : 95;
+    const analysisData = await response.json();
 
-    // Return the result
     return NextResponse.json({
-      score,
+      score: analysisData.score,
       details: {
-        isMalicious,
-        matches: matches.length > 0 ? matches : null,
+        isMalicious: analysisData.details?.safeBrowsing?.isMalicious || false,
+        matches: analysisData.details?.safeBrowsing?.matches || null,
+        // Include additional details for better client-side feedback
+        domainAge: analysisData.details?.whois?.data?.domainAge,
+        ssl: analysisData.details?.ssl?.valid || false,
+        dnsScore: analysisData.details?.dns?.securityScore || 0,
       },
     });
   } catch (error) {

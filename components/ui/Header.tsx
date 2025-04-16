@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Home,
@@ -23,10 +23,28 @@ import { useRouter } from "next/navigation";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  // Set mounted state after component mounts on client
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Debug logging for auth state
+  useEffect(() => {
+    console.log("[Header] Auth state:", {
+      userExists: !!user,
+      email: user?.email,
+      isAdmin,
+      loading,
+      timestamp: new Date().toISOString(),
+    });
+  }, [user, isAdmin, loading]);
 
   const handleSignOut = async () => {
+    console.log("[Header] Signing out user");
     await signOut();
     router.push("/");
     router.refresh();
@@ -35,6 +53,17 @@ const Header = () => {
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      {/* Debug display - only rendered on client after mount to avoid hydration issues */}
+      {mounted && process.env.NODE_ENV === "development" && (
+        <div className="bg-yellow-100 text-xs p-1 text-center">
+          Auth:{" "}
+          {loading
+            ? "Loading..."
+            : user
+            ? `Logged in as: ${user.email} (${isAdmin ? "Admin" : "User"})`
+            : "Not logged in"}
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Name */}
@@ -108,9 +137,22 @@ const Header = () => {
                           <User className="w-4 h-4 mr-2 text-gray-500" />
                           Profile
                         </Link>
+
+                        {/* Admin Panel Link - Only shown to admin users */}
+                        {isAdmin && (
+                          <Link
+                            href="/admin"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                            onClick={() => setIsProfileMenuOpen(false)}
+                          >
+                            <Shield className="w-4 h-4 mr-2 text-gray-500" />
+                            Admin Panel
+                          </Link>
+                        )}
+
                         <button
                           onClick={handleSignOut}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center hover:cursor-pointer"
                         >
                           <LogOut className="w-4 h-4 mr-2 text-gray-500" />
                           Sign out
@@ -205,6 +247,16 @@ const Header = () => {
                       label="Profile"
                       icon={<User className="w-5 h-5" />}
                     />
+
+                    {/* Admin Panel Link for Mobile Menu - Only shown to admin users */}
+                    {isAdmin && (
+                      <MobileNavLink
+                        href="/admin"
+                        label="Admin Panel"
+                        icon={<Shield className="w-5 h-5" />}
+                      />
+                    )}
+
                     <button
                       onClick={handleSignOut}
                       className="w-full text-left text-gray-700 hover:text-blue-600 hover:bg-blue-50 block rounded-lg px-3 py-2.5 text-base font-medium flex items-center"

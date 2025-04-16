@@ -85,8 +85,7 @@ function UpdatePasswordContent() {
           <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg text-red-700">
             <p className="font-medium">Invalid Recovery Link</p>
             <p className="text-sm mt-1">
-              {error ||
-                "Your password reset link is invalid or has expired."}
+              {error || "Your password reset link is invalid or has expired."}
             </p>
           </div>
           <p className="mt-4 text-gray-600">
@@ -124,12 +123,14 @@ export default function UpdatePasswordPage() {
 
         {/* Password Update Form or Error */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 border border-gray-200 dark:border-gray-700">
-          <Suspense fallback={
-            <div className="text-center">
-              <SpinnerMini size={30} />
-              <p className="mt-4 text-gray-600">Loading...</p>
-            </div>
-          }>
+          <Suspense
+            fallback={
+              <div className="text-center">
+                <SpinnerMini size={30} />
+                <p className="mt-4 text-gray-600">Loading...</p>
+              </div>
+            }
+          >
             <UpdatePasswordContent />
           </Suspense>
         </div>

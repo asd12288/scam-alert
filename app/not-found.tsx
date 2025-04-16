@@ -16,16 +16,16 @@ export default function NotFoundPage() {
             </div>
           </div>
         </div>
-        
+
         {/* Error Message */}
         <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-3">
           404: Page Not Found
         </h1>
-        
+
         <p className="text-gray-600 dark:text-gray-300 mb-8 text-lg">
           The page you're looking for doesn't exist or has been moved.
         </p>
-        
+
         {/* Navigation Options */}
         <div className="space-y-4">
           <Link
@@ -35,7 +35,7 @@ export default function NotFoundPage() {
             <Home className="mr-2 h-5 w-5" />
             Return to Home
           </Link>
-          
+
           <div className="flex space-x-4">
             <Link
               href="/blogs"
@@ -51,16 +51,18 @@ export default function NotFoundPage() {
             </Link>
           </div>
         </div>
-        
+
         {/* Additional Resources */}
         <div className="mt-12 pt-6 border-t border-gray-200 dark:border-gray-700">
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Looking for something specific? Try our{" "}
-            <Link href="/guide" className="text-blue-600 dark:text-blue-400 underline">
+            <Link
+              href="/guide"
+              className="text-blue-600 dark:text-blue-400 underline"
+            >
               security guide
             </Link>{" "}
-            or{" "}
-            <GoBackButton />
+            or <GoBackButton />
           </p>
         </div>
       </div>

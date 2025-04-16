@@ -1,8 +1,6 @@
 "use client";
 
-import { useAuth, useRequireAuth } from "@/lib/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import {
   ArrowLeft,
   Users,
@@ -13,35 +11,40 @@ import {
   Plus,
 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/lib/AuthContext";
+import { useEffect } from "react";
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { authorized, loading } = useRequireAuth("admin");
+  const { isAdmin, loading, user } = useAuth();
   const router = useRouter();
 
+  // Immediately redirect non-admin users
   useEffect(() => {
-    // Redirect if not an admin and not loading
-    if (!loading && !authorized) {
-      router.push("/");
+    if (!loading) {
+      if (!isAdmin) {
+        // Redirect non-admin users immediately
+        router.replace("/");
+      }
     }
-  }, [authorized, loading, router]);
+  }, [isAdmin, loading, router]);
 
-  if (loading) {
+  // Show loading spinner only while checking auth
+  if (loading || !isAdmin) {
     return (
-      <div className="flex items-center justify-center h-screen w-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-slate-300 border-t-slate-600 mb-2"></div>
+          <p className="text-gray-500">Loading...</p>
+        </div>
       </div>
     );
   }
 
-  if (!authorized) {
-    // This will briefly show before the redirect happens
-    return null;
-  }
-
+  // If we get here, user is definitely admin
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Admin sidebar */}
@@ -99,7 +102,7 @@ export default function AdminLayout({
               User Management
             </Link>
             <Link
-              href="/admin/security"
+              href="/admin/settings"
               className="flex items-center px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-md"
             >
               <Shield className="w-5 h-5 mr-3" />

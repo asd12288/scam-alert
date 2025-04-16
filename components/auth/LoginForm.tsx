@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import SpinnerMini from "../ui/SpinnerMini";
+import { useAuth } from "@/lib/AuthContext";
 
 // Define the form schema with validation
 const loginFormSchema = z.object({
@@ -36,6 +37,7 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { refreshAuth } = useAuth();
 
   // Initialize the form
   const form = useForm<LoginFormValues>({
@@ -52,7 +54,8 @@ export function LoginForm() {
       setIsLoading(true);
       setError(null);
 
-      const { error } = await signIn({
+      console.log("[LoginForm] Attempting login...");
+      const { error, data: authData } = await signIn({
         email: data.email,
         password: data.password,
       });
@@ -61,11 +64,17 @@ export function LoginForm() {
         throw new Error(error.message);
       }
 
+      console.log("[LoginForm] Login successful, refreshing auth context");
+
+      // Manually refresh the auth context to update the UI immediately
+      await refreshAuth();
+
       // Redirect to homepage after successful login
+      console.log("[LoginForm] Redirecting to homepage");
       router.push("/");
       router.refresh();
     } catch (err: any) {
-      console.error("Login error:", err);
+      console.error("[LoginForm] Login error:", err);
       setError(
         err.message || "Failed to sign in. Please check your credentials."
       );

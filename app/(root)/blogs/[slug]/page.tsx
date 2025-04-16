@@ -9,7 +9,7 @@ import ShareButtons from "@/components/ShareButtons";
 import { headers } from "next/headers";
 
 // Mark this page for dynamic rendering to avoid build errors
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // Helper function to safely format dates
 const formatDate = (dateString: string | null | undefined) => {

@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { AlertTriangle, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import SpinnerMini from "../ui/SpinnerMini";
+import { useAuth } from "@/lib/AuthContext";
 
 // Define the form schema with validation
 const signupFormSchema = z
@@ -47,6 +48,7 @@ export function SignupForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
+  const { refreshAuth } = useAuth();
 
   // Initialize the form
   const form = useForm<SignupFormValues>({
@@ -66,7 +68,8 @@ export function SignupForm() {
       setError(null);
       setSuccess(false);
 
-      const { error } = await signUp({
+      console.log("[SignupForm] Attempting signup...");
+      const { error, data: signupData } = await signUp({
         email: data.email,
         password: data.password,
         name: data.name,
@@ -76,14 +79,19 @@ export function SignupForm() {
         throw new Error(error.message);
       }
 
+      console.log("[SignupForm] Signup successful");
+
       // Show success message
       setSuccess(true);
       form.reset();
 
+      // Refresh auth context in case auto-login is enabled
+      await refreshAuth();
+
       // We don't redirect immediately since Supabase email verification is likely enabled
       // User should check their email first
     } catch (err: any) {
-      console.error("Signup error:", err);
+      console.error("[SignupForm] Signup error:", err);
       setError(err.message || "Failed to create account. Please try again.");
     } finally {
       setIsLoading(false);

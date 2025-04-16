@@ -45,41 +45,42 @@ export async function saveDomainSearch(
       screenshot,
     } = data;
 
-    // Check if the domain already exists in the database
-    const { data: existingDomain, error: queryError } = await supabase
-      .from("domain_searches")
+    const normalizedDomain = domain.toLowerCase().trim();
+
+    // 1. First update the domain_stats table (create or update)
+    const { data: existingStats, error: statsQueryError } = await supabase
+      .from("domain_stats")
       .select("id, search_count, screenshot")
-      .eq("domain", domain.toLowerCase().trim())
-      .order("updated_at", { ascending: false })
+      .eq("domain", normalizedDomain)
       .limit(1);
 
-    if (queryError) {
-      console.error("Error checking existing domain:", queryError);
+    if (statsQueryError) {
+      console.error("Error checking domain stats:", statsQueryError);
       return false;
     }
 
-    // If domain exists, update search_count and other data as needed
-    if (existingDomain && existingDomain.length > 0) {
+    // If domain exists in stats table, update it
+    if (existingStats && existingStats.length > 0) {
       const {
         id,
         search_count,
         screenshot: existingScreenshot,
-      } = existingDomain[0];
+      } = existingStats[0];
       const newSearchCount = search_count ? search_count + 1 : 2;
 
       // Only update with new screenshot if the current one doesn't exist
       const screenshotToUse = existingScreenshot || screenshot;
 
       const { error: updateError } = await supabase
-        .from("domain_searches")
+        .from("domain_stats")
         .update({
-          score,
+          last_score: score,
           is_malicious: safeBrowsing?.isMalicious || false,
           ssl_valid: ssl?.valid,
           domain_age: whois?.data?.domainAge,
           search_count: newSearchCount,
           screenshot: screenshotToUse,
-          search_data: {
+          last_search_data: {
             details: data.details,
             aiSummary,
             analysisDate: analysisDate || new Date().toISOString(),
@@ -89,32 +90,56 @@ export async function saveDomainSearch(
         .eq("id", id);
 
       if (updateError) {
-        console.error("Error updating domain search:", updateError);
-        return false;
+        console.error("Error updating domain stats:", updateError);
+        // Continue anyway to try saving the user search
       }
+    } else {
+      // If domain doesn't exist in stats table, insert new record
+      const { error: insertError } = await supabase
+        .from("domain_stats")
+        .insert({
+          domain: normalizedDomain,
+          search_count: 1,
+          last_score: score,
+          is_malicious: safeBrowsing?.isMalicious || false,
+          ssl_valid: ssl?.valid,
+          domain_age: whois?.data?.domainAge,
+          screenshot,
+          last_search_data: {
+            details: data.details,
+            aiSummary,
+            analysisDate: analysisDate || new Date().toISOString(),
+          },
+        });
 
-      return true;
+      if (insertError) {
+        console.error("Error saving domain stats:", insertError);
+        // Continue anyway to try saving the user search
+      }
     }
 
-    // If domain doesn't exist, insert new record
-    const { error } = await supabase.from("domain_searches").insert({
-      user_id: userId || null,
-      domain: domain.toLowerCase().trim(),
-      score,
-      is_malicious: safeBrowsing?.isMalicious || false,
-      ssl_valid: ssl?.valid,
-      domain_age: whois?.data?.domainAge,
-      search_count: 1,
-      screenshot,
-      search_data: {
-        details: data.details,
-        aiSummary,
-        analysisDate: analysisDate || new Date().toISOString(),
-      },
-    });
+    // 2. Always insert a new record in domain_searches for user history
+    // Only add user_id if provided, otherwise it's an anonymous search
+    const { error: searchError } = await supabase
+      .from("domain_searches")
+      .insert({
+        user_id: userId || null,
+        domain: normalizedDomain,
+        score,
+        is_malicious: safeBrowsing?.isMalicious || false,
+        ssl_valid: ssl?.valid,
+        domain_age: whois?.data?.domainAge,
+        search_count: 1, // Always 1 for individual searches
+        screenshot, // Still store screenshot per search
+        search_data: {
+          details: data.details,
+          aiSummary,
+          analysisDate: analysisDate || new Date().toISOString(),
+        },
+      });
 
-    if (error) {
-      console.error("Error saving domain search:", error);
+    if (searchError) {
+      console.error("Error saving domain search:", searchError);
       return false;
     }
 
@@ -137,18 +162,17 @@ export async function getRecentDomainSearch(
 ): Promise<any | null> {
   try {
     const supabase = createClient();
+    const normalizedDomain = domain.toLowerCase().trim();
 
     // Calculate the date threshold (current date minus maxAgeDays)
     const dateThreshold = new Date();
     dateThreshold.setDate(dateThreshold.getDate() - maxAgeDays);
 
-    // Query for recent searches for this domain
+    // First check the domain_stats table for the most recent data
     const { data, error } = await supabase
-      .from("domain_searches")
+      .from("domain_stats")
       .select("*")
-      .eq("domain", domain.toLowerCase().trim())
-      .gte("created_at", dateThreshold.toISOString())
-      .order("updated_at", { ascending: false })
+      .eq("domain", normalizedDomain)
       .limit(1);
 
     if (error) {
@@ -156,8 +180,36 @@ export async function getRecentDomainSearch(
       return null;
     }
 
+    // If found in domain_stats and recently updated, return it
+    if (data && data.length > 0) {
+      const statsRecord = data[0];
+      const updatedAt = new Date(statsRecord.updated_at);
+
+      if (updatedAt >= dateThreshold) {
+        return {
+          ...statsRecord,
+          score: statsRecord.last_score, // Map last_score to score in the returned object
+          search_data: statsRecord.last_search_data,
+        };
+      }
+    }
+
+    // If not found in stats or too old, check domain_searches as fallback
+    const { data: searchesData, error: searchesError } = await supabase
+      .from("domain_searches")
+      .select("*")
+      .eq("domain", normalizedDomain)
+      .gte("created_at", dateThreshold.toISOString())
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (searchesError) {
+      console.error("Error retrieving from domain_searches:", searchesError);
+      return null;
+    }
+
     // Return the most recent search or null if none found
-    return data && data.length > 0 ? data[0] : null;
+    return searchesData && searchesData.length > 0 ? searchesData[0] : null;
   } catch (error) {
     console.error("Failed to get recent domain search:", error);
     return null;
@@ -201,11 +253,16 @@ export async function getTrendingSearches(days = 7, limit = 5): Promise<any[]> {
   try {
     const supabase = createClient();
 
-    // Get the most frequently searched domains
-    const { data, error } = await supabase.rpc("get_trending_domains", {
-      days_back: days,
-      results_limit: limit,
-    });
+    // Use domain_stats for trending searches instead of RPC function
+    const { data, error } = await supabase
+      .from("domain_stats")
+      .select("domain, last_score, is_malicious, search_count, updated_at")
+      .gte(
+        "updated_at",
+        new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
+      )
+      .order("search_count", { ascending: false })
+      .limit(limit);
 
     if (error) {
       console.error("Error fetching trending searches:", error);
@@ -225,11 +282,13 @@ export async function getTrendingSearches(days = 7, limit = 5): Promise<any[]> {
 export async function getDomainSearchCount(domain: string): Promise<number> {
   try {
     const supabase = createClient();
+    const normalizedDomain = domain.toLowerCase().trim();
 
+    // Use domain_stats table for search counts
     const { data, error } = await supabase
-      .from("domain_searches")
+      .from("domain_stats")
       .select("search_count")
-      .eq("domain", domain.toLowerCase().trim());
+      .eq("domain", normalizedDomain);
 
     if (error) {
       console.error("Error retrieving domain search count:", error);
@@ -251,9 +310,12 @@ export async function getMostSearchedDomains(limit = 10): Promise<any[]> {
   try {
     const supabase = createClient();
 
+    // Use domain_stats table for most searched domains
     const { data, error } = await supabase
-      .from("domain_searches")
-      .select("domain, score, is_malicious, search_count, updated_at")
+      .from("domain_stats")
+      .select(
+        "domain, last_score as score, is_malicious, search_count, updated_at"
+      )
       .order("search_count", { ascending: false })
       .limit(limit);
 
@@ -277,18 +339,20 @@ export async function getDomainScreenshot(
 ): Promise<string | null> {
   try {
     const supabase = createClient();
+    const normalizedDomain = domain.toLowerCase().trim();
 
+    // Use domain_stats table for screenshots
     const { data, error } = await supabase
-      .from("domain_searches")
+      .from("domain_stats")
       .select("screenshot")
-      .eq("domain", domain.toLowerCase().trim());
+      .eq("domain", normalizedDomain);
 
     if (error || !data || data.length === 0) {
       console.error("Error retrieving domain screenshot:", error);
       return null;
     }
 
-    return data[0]?.screenshot || null;
+    return data[0].screenshot;
   } catch (error) {
     console.error("Failed to get domain screenshot:", error);
     return null;

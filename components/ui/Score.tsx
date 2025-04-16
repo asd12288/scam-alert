@@ -51,7 +51,7 @@ const getScoreInfo = (score: number) => {
 };
 
 interface ScoreProps {
-  score: number;
+  score: number | undefined | null;
   size?: "sm" | "md" | "lg";
   showLabel?: boolean;
   showDescription?: boolean;
@@ -65,7 +65,9 @@ const Score: React.FC<ScoreProps> = ({
   showDescription = true,
   className = "",
 }) => {
-  const clampedScore = Math.max(0, Math.min(100, Math.round(score)));
+  // Handle undefined, null, NaN or non-numeric values
+  const numericScore = typeof score === "number" && !isNaN(score) ? score : 0;
+  const clampedScore = Math.max(0, Math.min(100, Math.round(numericScore)));
   const { color, gradient, label, description } = getScoreInfo(clampedScore);
 
   // Size variants

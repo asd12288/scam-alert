@@ -11,7 +11,7 @@ import { getBlogPosts } from "@/lib/supabase";
 import { format, isValid, parseISO } from "date-fns";
 
 // Mark the page as dynamically rendered to avoid build-time fetching errors
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Blogs | AI Scam Alert",
