@@ -12,33 +12,52 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { isAdmin, loading, user } = useAuth();
+  const { isAdmin, loading, user, authInitialized } = useAuth();
   const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
 
-  // Immediately redirect non-admin users
+  // Handle auth state changes more efficiently
   useEffect(() => {
-    if (!loading) {
+    // Only check admin status AFTER authentication is fully initialized
+    if (authInitialized && !authChecked) {
+      setAuthChecked(true);
+
+      console.log(`[AdminLayout] Auth initialized, admin status: ${isAdmin}`);
+
       if (!isAdmin) {
-        // Redirect non-admin users immediately
+        console.log("[AdminLayout] Not admin, redirecting to home");
         router.replace("/");
       }
     }
-  }, [isAdmin, loading, router]);
+  }, [isAdmin, authInitialized, router, authChecked]);
 
-  // Show loading spinner only while checking auth
-  if (loading || !isAdmin) {
+  // Show loading state while authentication is still initializing
+  if (!authInitialized || (loading && !authChecked)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-slate-300 border-t-slate-600 mb-2"></div>
-          <p className="text-gray-500">Loading...</p>
+          <p className="text-gray-500">Loading admin panel...</p>
+          <p className="text-xs text-gray-400 mt-2">Verifying permissions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // For non-admins who haven't been redirected yet, show minimal UI
+  if (!isAdmin) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-slate-300 border-t-slate-600 mb-2"></div>
+          <p className="text-gray-500">Checking permissions...</p>
         </div>
       </div>
     );

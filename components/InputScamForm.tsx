@@ -8,7 +8,15 @@ import { Form, FormControl, FormField, FormItem } from "./ui/form";
 import { Input } from "./ui/input";
 import { useForm } from "react-hook-form";
 import SpinnerMini from "./ui/SpinnerMini";
-import { AlertTriangle, Search, X, Bot, Brain } from "lucide-react";
+import {
+  AlertTriangle,
+  Search,
+  X,
+  Bot,
+  Brain,
+  HelpCircle,
+  Globe,
+} from "lucide-react";
 import SecurityReport from "./ui/SecurityReport";
 
 const formSchema = z.object({
@@ -26,8 +34,9 @@ function ClearButton({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+      aria-label="Clear search"
     >
-      <X size={16} />
+      <X size={18} />
     </button>
   );
 }
@@ -37,6 +46,7 @@ const InputScam = ({ onResultsChange }: InputScamProps) => {
   const [score, setScore] = useState<number | null>(null);
   const [domainData, setDomainData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showHelp, setShowHelp] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -63,12 +73,17 @@ const InputScam = ({ onResultsChange }: InputScamProps) => {
       setLoading(true);
       setError(null);
 
+      // Clean the domain input (remove https://, www., etc.)
+      let cleanDomain = values.domain.trim();
+      cleanDomain = cleanDomain.replace(/^(https?:\/\/)?(www\.)?/i, "");
+      cleanDomain = cleanDomain.split("/")[0]; // Remove any paths
+
       const response = await fetch("/api/domain-security", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ domain: values.domain }),
+        body: JSON.stringify({ domain: cleanDomain }),
       });
 
       if (!response.ok) {
@@ -83,13 +98,28 @@ const InputScam = ({ onResultsChange }: InputScamProps) => {
 
       setScore(result.score);
       setDomainData({
-        domain: result.domain || values.domain,
+        domain: result.domain || cleanDomain,
         aiSummary: result.aiSummary,
         details: result.details || {},
-        screenshot: result.screenshot, // Include the screenshot from the API response
-        searchCount: result.searchCount,
-        cached: result.cached,
+        screenshot: result.screenshot,
       });
+
+      // Scroll to results after a short delay
+      setTimeout(() => {
+        const reportHeader = document.getElementById("report-header");
+        if (reportHeader) {
+          // Add padding to ensure the header isn't at the very top of the screen
+          const paddingTop = 20;
+          const headerPosition =
+            reportHeader.getBoundingClientRect().top +
+            window.pageYOffset -
+            paddingTop;
+          window.scrollTo({
+            top: headerPosition,
+            behavior: "smooth",
+          });
+        }
+      }, 300);
     } catch (error: any) {
       console.error("Error checking domain:", error);
       setError(
@@ -104,8 +134,8 @@ const InputScam = ({ onResultsChange }: InputScamProps) => {
 
   const placeholderExamples = [
     "example.com",
-    "yourbank-verify.com",
-    "amazonshopping.site",
+    "yourbank.com",
+    "onlineshopping.site",
   ];
 
   const [currentPlaceholder, setCurrentPlaceholder] = useState(0);
@@ -119,71 +149,127 @@ const InputScam = ({ onResultsChange }: InputScamProps) => {
   }, []);
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="flex flex-col">
-            <div className="flex items-center p-1.5 bg-white shadow-sm rounded-lg border border-gray-200">
-              <div className="flex items-center pl-3 text-gray-400">
-                <Search size={18} />
+    <div className="w-full max-w-3xl mx-auto">
+      <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="flex flex-col">
+              <div className="relative flex flex-col sm:flex-row items-stretch gap-3">
+                <div className="flex items-center flex-1 relative bg-white rounded-lg border-2 border-gray-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-200">
+                  <div className="pl-3 py-2 text-gray-500">
+                    <Globe size={24} />
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="domain"
+                    render={({ field }) => (
+                      <FormItem className="flex-1 w-full">
+                        <FormControl>
+                          <div className="relative w-full">
+                            <Input
+                              className="w-full pl-2 pr-8 py-3 border-0 shadow-none focus:ring-0 text-lg bg-transparent"
+                              placeholder={
+                                placeholderExamples[currentPlaceholder]
+                              }
+                              {...field}
+                              aria-label="Enter website address"
+                            />
+                            {field.value && <ClearButton onClick={resetForm} />}
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="h-auto sm:w-auto w-full py-3 px-5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-lg rounded-lg flex items-center justify-center"
+                >
+                  {loading ? (
+                    <SpinnerMini size="lg" />
+                  ) : (
+                    <>
+                      <Search className="w-5 h-5 mr-2" />
+                      <span>Check Website</span>
+                    </>
+                  )}
+                </Button>
               </div>
-              <FormField
-                control={form.control}
-                name="domain"
-                render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          className="w-full px-3 py-3 border-0 shadow-none focus:ring-0 text-gray-900 placeholder-gray-400 text-lg"
-                          placeholder={`Enter a domain (e.g., ${placeholderExamples[currentPlaceholder]})`}
-                          {...field}
-                        />
-                        {field.value && <ClearButton onClick={resetForm} />}
-                      </div>
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <Button
-                type="submit"
-                disabled={loading}
-                className="min-w-[120px] bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-3 rounded-md m-1 flex items-center justify-center"
-              >
-                {loading ? (
-                  <SpinnerMini />
-                ) : (
-                  <>
-                    <Bot className="w-4 h-4 mr-1.5" />
-                    Scan Domain
-                  </>
-                )}
-              </Button>
-            </div>
 
-            <div className="text-center mt-1.5 text-xs text-gray-500">
-              Enter any website domain to check if it's safe
+              <div className="flex justify-between items-center mt-3">
+                <div className="text-sm text-gray-500">
+                  Examples: amazon.com, facebook.com, cnn.com
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowHelp(!showHelp)}
+                  className="text-blue-600 flex items-center text-sm hover:text-blue-800"
+                >
+                  <HelpCircle size={16} className="mr-1" />
+                  Help
+                </button>
+              </div>
+
+              {showHelp && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100 text-gray-700 text-base">
+                  <h3 className="font-medium mb-2">How to use this tool:</h3>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Type or paste a website address (like "amazon.com")</li>
+                    <li>You don't need to add "www." or "https://"</li>
+                    <li>Click "Check Website" to see if it's safe</li>
+                    <li>
+                      Our AI will analyze the website and give you safety advice
+                    </li>
+                  </ul>
+                </div>
+              )}
             </div>
-          </div>
-        </form>
-      </Form>
+          </form>
+        </Form>
+      </div>
 
       {error && (
-        <div className="mt-5 p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 flex items-start">
-          <AlertTriangle className="mr-2 mt-0.5 flex-shrink-0" size={16} />
-          <span>{error}</span>
+        <div className="mt-6 p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 flex items-start">
+          <AlertTriangle className="mr-2 mt-0.5 flex-shrink-0" size={20} />
+          <div>
+            <p className="font-medium">Something went wrong</p>
+            <p>{error}</p>
+          </div>
+        </div>
+      )}
+
+      {loading && (
+        <div className="mt-6 flex justify-center">
+          <div className="p-6 bg-white rounded-lg border border-blue-100 shadow-sm w-full max-w-md">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 mb-4 rounded-full bg-blue-100 flex items-center justify-center">
+                <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+              <h3 className="text-xl font-medium text-gray-900">
+                Checking website safety
+              </h3>
+              <p className="mt-2 text-gray-600">
+                Our AI is analyzing this website for potential scams and
+                security risks...
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
       {score !== null && domainData && (
-        <div className="mt-8 transition-all duration-300 ease-in-out animate-fadeIn">
+        <div id="results-section" className="mt-8 scroll-mt-6">
           <SecurityReport score={score} data={domainData} />
         </div>
       )}
 
       {!score && !error && !loading && form.formState.isSubmitted && (
-        <div className="mt-8 text-center p-5 bg-gray-50 rounded-lg border border-gray-100 text-gray-600">
-          No results to display. Try checking a different domain.
+        <div className="mt-8 text-center p-5 bg-gray-50 rounded-lg border border-gray-200 text-gray-700">
+          <p className="text-lg font-medium">No results to display</p>
+          <p className="mt-2">
+            Please try checking a different website address.
+          </p>
         </div>
       )}
     </div>

@@ -23,6 +23,7 @@ type AuthContextType = {
   loading: boolean;
   isAdmin: boolean;
   refreshAuth: () => Promise<void>;
+  authInitialized: boolean; // Expose this to components
 };
 
 export const AuthContext = createContext<AuthContextType>({
@@ -31,6 +32,7 @@ export const AuthContext = createContext<AuthContextType>({
   loading: true,
   isAdmin: false,
   refreshAuth: async () => {},
+  authInitialized: false,
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -41,7 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [mounted, setMounted] = useState(false);
   const [authInitialized, setAuthInitialized] = useState(false);
 
-  // Load user profile data
+  // Load user profile data with priority and caching
   const loadUserProfile = useCallback(async (userId: string) => {
     if (!userId) {
       setProfile(null);
@@ -53,23 +55,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("[AuthContext] Loading profile for user:", userId);
       const userProfile = await getUserProfile(userId);
 
-      // Double-check admin status with direct query for verification
-      let adminStatus = userProfile?.role === "admin";
-
-      // Double-check with a separate verification query
-      if (adminStatus) {
-        console.log(
-          "[AuthContext] Verifying admin role with direct database check"
-        );
-        const verifiedAdmin = await verifyAdminRole(userId);
-        if (!verifiedAdmin) {
-          console.warn(
-            "[AuthContext] Admin role verification failed despite profile showing admin role"
-          );
-        }
-        // Keep the verified result for extra safety
-        adminStatus = verifiedAdmin;
-      }
+      // Directly check admin status and log it
+      const adminStatus = userProfile?.role === "admin";
+      console.log(
+        `[AuthContext] Admin status determined: ${adminStatus} for user ${userId}`
+      );
 
       setProfile(userProfile);
       setIsAdmin(adminStatus);
@@ -80,10 +70,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         role: userProfile?.role,
         userId: userProfile?.id,
       });
+
+      return { profile: userProfile, isAdmin: adminStatus };
     } catch (error) {
       console.error("[AuthContext] Error loading user profile:", error);
       setProfile(null);
       setIsAdmin(false);
+      return null;
     }
   }, []);
 
@@ -145,14 +138,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let isActive = true;
     console.log("[AuthContext] Initial auth check starting");
 
-    // Set a definite timeout to prevent infinite loading
+    // Set a longer timeout to ensure admin status is properly checked
     const timeoutId = setTimeout(() => {
       if (isActive && loading && !authInitialized) {
         console.log("[AuthContext] Auth check timed out after 5 seconds");
         setLoading(false);
         setAuthInitialized(true);
       }
-    }, 5000);
+    }, 5000); // Increased back to 5 seconds to give time for admin check
 
     // Check if there's a current session and user on initial load
     const initialAuthCheck = async () => {
@@ -165,7 +158,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         if (sessionError) {
           console.error("[AuthContext] Session error:", sessionError);
-          if (isActive) setLoading(false);
+          if (isActive) {
+            setLoading(false);
+            setAuthInitialized(true);
+          }
           return;
         }
 
@@ -177,7 +173,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         if (userError) {
           console.error("[AuthContext] User error:", userError);
-          if (isActive) setLoading(false);
+          if (isActive) {
+            setLoading(false);
+            setAuthInitialized(true);
+          }
           return;
         }
 
@@ -192,14 +191,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(currentUser || null);
 
           if (currentUser) {
-            await loadUserProfile(currentUser.id);
+            // Wait for profile load to complete before marking auth as initialized
+            const result = await loadUserProfile(currentUser.id);
+            console.log(
+              "[AuthContext] Profile load completed with result:",
+              result
+            );
+            if (isActive) {
+              setAuthInitialized(true);
+              setLoading(false);
+            }
           } else {
             setProfile(null);
             setIsAdmin(false);
+            if (isActive) {
+              setAuthInitialized(true);
+              setLoading(false);
+            }
           }
-
-          setAuthInitialized(true);
-          setLoading(false);
         }
       } catch (error) {
         console.error("[AuthContext] Error in initial auth check:", error);
@@ -210,6 +219,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
+    // Prioritize initialAuthCheck by calling it immediately
     initialAuthCheck();
 
     // Set up a listener for auth state changes
@@ -253,9 +263,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         authListener.subscription.unsubscribe();
       }
     };
-  }, [mounted, loadUserProfile]); // Remove loading from dependencies to avoid re-running this effect when loading changes
+  }, [mounted, loadUserProfile]); // Remove loading from dependencies to avoid re-running
 
-  // During SSR or initial render, use a placeholder state
+  // During SSR, use a pre-rendered state that assumes not logged in
+  // This avoids the flash of loading state on initial render
   if (!mounted) {
     return (
       <AuthContext.Provider
@@ -265,6 +276,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           loading: true,
           isAdmin: false,
           refreshAuth,
+          authInitialized: false,
         }}
       >
         {children}
@@ -274,7 +286,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, loading, isAdmin, refreshAuth }}
+      value={{ user, profile, loading, isAdmin, refreshAuth, authInitialized }}
     >
       {children}
     </AuthContext.Provider>

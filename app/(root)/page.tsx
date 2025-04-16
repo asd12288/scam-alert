@@ -40,7 +40,7 @@ const Page = () => {
             </h1>
           </div>
           <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto text-base sm:text-lg px-4">
-            Using artificial intelligence to detect and protect you from
+            Using AI to detect and protect you from
             sophisticated online scams.
           </p>
         </div>

@@ -3,19 +3,18 @@ import Score from "./Score";
 import {
   AlertTriangle,
   Shield,
+  ChevronDown,
   CheckCircle,
   XCircle,
   Clock,
   Copy,
-  AlertOctagon,
+  ExternalLink,
   Image as ImageIcon,
-  ExternalLink as LinkIcon,
   Lock,
-  Calendar,
-  MapPin,
-  Briefcase,
+  ThumbsUp,
+  ThumbsDown,
   Info,
-  X,
+  HelpCircle,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -73,8 +72,9 @@ const SecurityReport: React.FC<SecurityReportProps> = ({
   data,
   onRefresh,
 }) => {
+  const [showDetails, setShowDetails] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [showFullScreenshot, setShowFullScreenshot] = useState(false);
 
   // Extract data safely
   const domain = data?.domain || "Unknown domain";
@@ -96,22 +96,16 @@ const SecurityReport: React.FC<SecurityReportProps> = ({
     try {
       return new Date(dateString).toLocaleDateString();
     } catch (e) {
-      return "Unknown";
+      return dateString;
     }
   };
 
   const formatDomainAge = (age?: number) => {
     if (!age) return "New";
+    if (age < 30) return "Less than 1 month";
+    if (age < 365) return `${Math.floor(age / 30)} months`;
     const years = Math.floor(age / 365);
-    const months = Math.floor((age % 365) / 30);
-    
-    if (years > 0) {
-      return years === 1 ? "1 year" : `${years} years`;
-    } else if (months > 0) {
-      return months === 1 ? "1 month" : `${months} months`;
-    } else {
-      return "Less than 1 month";
-    }
+    return `${years} ${years === 1 ? "year" : "years"}`;
   };
 
   const copyDomain = () => {
@@ -120,358 +114,521 @@ const SecurityReport: React.FC<SecurityReportProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Determine security level
-  const getSecurityLevel = () => {
-    if (score >= 80) return "VERY SAFE";
-    if (score >= 70) return "SAFE";
-    if (score >= 60) return "MODERATE";
-    if (score >= 40) return "CAUTION";
-    if (score >= 20) return "WARNING";
-    return "DANGER";
+  // Determine risk level based on score
+  const getRiskLevel = () => {
+    if (score >= 80) return "Safe";
+    if (score >= 60) return "Probably Safe";
+    if (score >= 40) return "Caution";
+    return "High Risk";
   };
 
-  // Determine color scheme based on score
-  const getColorScheme = () => {
-    if (score >= 80) return { bg: "bg-green-50", text: "text-green-800", border: "border-green-200", icon: <CheckCircle className="w-6 h-6" /> };
-    if (score >= 60) return { bg: "bg-yellow-50", text: "text-yellow-800", border: "border-yellow-200", icon: <AlertTriangle className="w-6 h-6" /> };
-    return { bg: "bg-red-50", text: "text-red-800", border: "border-red-200", icon: <XCircle className="w-6 h-6" /> };
+  // Get color classes based on risk level
+  const getRiskColors = () => {
+    if (score >= 80)
+      return {
+        bgHeader: "bg-green-50",
+        border: "border-green-200",
+        text: "text-green-800",
+        icon: <CheckCircle className="w-6 h-6 text-green-600" />,
+      };
+    if (score >= 60)
+      return {
+        bgHeader: "bg-blue-50",
+        border: "border-blue-200",
+        text: "text-blue-800",
+        icon: <ThumbsUp className="w-6 h-6 text-blue-600" />,
+      };
+    if (score >= 40)
+      return {
+        bgHeader: "bg-yellow-50",
+        border: "border-yellow-200",
+        text: "text-yellow-800",
+        icon: <AlertTriangle className="w-6 h-6 text-yellow-600" />,
+      };
+    return {
+      bgHeader: "bg-red-50",
+      border: "border-red-200",
+      text: "text-red-800",
+      icon: <ThumbsDown className="w-6 h-6 text-red-600" />,
+    };
   };
 
-  const colorScheme = getColorScheme();
-  const securityLevel = getSecurityLevel();
+  const colors = getRiskColors();
+  const riskLevel = getRiskLevel();
 
-  // Split AI summary into sections
-  const parseSummary = (summary?: string) => {
-    if (!summary) return { overall: "", risks: [], advice: [] };
-    
-    const lines = summary.split("\n").filter(line => line.trim());
-    const overall = lines[0] || "";
-    
-    const risks = lines.filter(line => 
-      line.includes("❌") || 
-      line.includes("⚠️") || 
-      line.includes("🔴") || 
-      line.includes("🟠")
-    );
-    
-    const advice = lines.filter(line => 
-      line.includes("💡") || 
-      line.includes("✅") || 
-      line.includes("🟢")
-    );
-    
-    return { overall, risks, advice };
+  // Extract key findings from AI summary
+  const getKeyFindings = () => {
+    if (!aiSummary) return [];
+
+    const lines = aiSummary.split("\n").filter((line) => line.trim() !== "");
+
+    // Extract bullet points with emojis
+    const findings = lines
+      .filter((line) => /^[•🔴🟠🟡🟢✅❌⚠️]/.test(line.trim()))
+      .map((line) => line.trim().replace(/^[•🔴🟠🟡🟢✅❌⚠️]\s*/, ""));
+
+    // Limit to the most important findings (max 3)
+    return findings.slice(0, 3);
   };
 
-  const { overall, risks, advice } = parseSummary(aiSummary);
+  const keyFindings = getKeyFindings();
 
-  // Check if domain is new (less than 6 months)
-  const isNewDomain = whoisData.domainAge ? whoisData.domainAge < 180 : false;
+  // Get recommendations from AI summary
+  const getRecommendations = () => {
+    if (!aiSummary) return [];
+
+    const lines = aiSummary.split("\n").filter((line) => line.trim() !== "");
+    return lines
+      .filter((line) => line.includes("💡"))
+      .map((line) => line.trim().replace(/^💡\s*/, ""));
+  };
+
+  const recommendations = getRecommendations();
+
+  // Simple verdict from the first line of AI summary
+  const getVerdict = () => {
+    if (!aiSummary) return "";
+    const lines = aiSummary.split("\n").filter((line) => line.trim() !== "");
+    return lines[0] || "";
+  };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden border">
-      {/* Domain Header */}
-      <div className="bg-gray-50 border-b p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col">
-              <div className="text-lg sm:text-xl font-bold text-gray-800">{domain}</div>
-              <div className="flex items-center gap-3 mt-1">
-                <button 
-                  onClick={copyDomain} 
-                  className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm"
+    <div
+      id="security-report"
+      className="w-full max-w-3xl mx-auto bg-white rounded-lg shadow-md overflow-hidden border border-gray-200"
+    >
+      {/* Header with website info and risk level - Bigger design */}
+      <div
+        id="report-header"
+        className={`px-5 py-5 ${colors.bgHeader} border-b ${colors.border} flex justify-between items-center gap-4`}
+      >
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="flex-shrink-0">
+            {React.cloneElement(colors.icon, { className: "w-8 h-8" })}
+          </div>
+          <div className="overflow-hidden">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-lg font-bold text-gray-900 truncate max-w-[220px] sm:max-w-xs">
+                {domain}
+              </h2>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={copyDomain}
+                  className="text-gray-500 hover:text-gray-700"
+                  title="Copy website address"
                 >
-                  <Copy size={14} />
-                  {copied ? "Copied!" : "Copy"}
+                  {copied ? (
+                    <CheckCircle size={18} className="text-green-500" />
+                  ) : (
+                    <Copy size={18} />
+                  )}
                 </button>
-                <a 
-                  href={`https://${domain}`} 
-                  target="_blank" 
+                <a
+                  href={`https://${domain}`}
+                  target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm"
+                  className="text-blue-600 hover:text-blue-800 flex items-center text-sm"
+                  title="Visit website (opens in new window)"
                 >
-                  <LinkIcon size={14} />
-                  Visit Site
+                  <ExternalLink size={16} className="mr-1" />
+                  Visit
                 </a>
               </div>
             </div>
+            <p className={`text-base font-medium mt-1 ${colors.text}`}>
+              <span>This website appears to be: {riskLevel}</span>
+            </p>
           </div>
+        </div>
 
-          <Score score={score} size="lg" className="min-w-[120px]" />
+        <div className="flex-shrink-0">
+          <Score
+            score={score}
+            size="md"
+            showDescription={false}
+            variant="badge"
+          />
         </div>
       </div>
 
-      {/* Main Security Summary Panel */}
-      <div className={`${colorScheme.bg} ${colorScheme.border} border-b p-4 sm:p-6`}>
-        <div className="flex items-center gap-3 mb-4">
-          {colorScheme.icon}
-          <h2 className={`text-xl sm:text-2xl font-bold ${colorScheme.text}`}>
-            {securityLevel}
-          </h2>
-        </div>
-        
-        <div className="text-gray-700 text-base sm:text-lg mb-4">
-          {overall || `This website has been analyzed and given a security score of ${score}/100.`}
-        </div>
-
-        {/* Key Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-          {/* Domain Age */}
-          <div className="bg-white rounded-lg border p-3 flex items-center">
-            <Calendar className="w-6 h-6 mr-3 text-gray-500" />
-            <div>
-              <div className="text-sm text-gray-500">Domain Age</div>
-              <div className="font-semibold flex items-center">
-                {formatDomainAge(whoisData.domainAge)}
-                {isNewDomain && (
-                  <span className="ml-2 bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">New</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* SSL Security */}
-          <div className="bg-white rounded-lg border p-3 flex items-center">
-            <Lock className={`w-6 h-6 mr-3 ${ssl.valid ? "text-green-500" : "text-red-500"}`} />
-            <div>
-              <div className="text-sm text-gray-500">Connection</div>
-              <div className={`font-semibold ${ssl.valid ? "text-green-600" : "text-red-600"}`}>
-                {ssl.valid ? "Secure (HTTPS)" : "Not Secure"}
-              </div>
-            </div>
-          </div>
-
-          {/* Safety Check */}
-          <div className="bg-white rounded-lg border p-3 flex items-center">
-            <Shield className={`w-6 h-6 mr-3 ${isMalicious ? "text-red-500" : "text-green-500"}`} />
-            <div>
-              <div className="text-sm text-gray-500">Safety Check</div>
-              <div className={`font-semibold ${isMalicious ? "text-red-600" : "text-green-600"}`}>
-                {isMalicious ? "Threats Detected" : "No Threats Found"}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Screenshot Preview */}
+      {/* Main content area with simplified layout */}
+      <div className="p-4">
+        {/* Screenshot preview - Smaller and contained */}
         {screenshot && (
-          <div className="bg-white rounded-lg border overflow-hidden mb-4">
-            <div className="bg-gray-100 border-b p-2 text-sm font-medium flex items-center">
-              <ImageIcon className="w-4 h-4 mr-2 text-gray-500" />
-              Website Preview
-            </div>
-            <div 
-              className="relative cursor-pointer overflow-hidden max-h-[200px]"
-              onClick={() => setShowFullScreenshot(true)}
-            >
-              <Image 
-                src={screenshot} 
+          <div className="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+            <div className="relative h-36 sm:h-48 md:h-60">
+              <Image
+                src={screenshot}
                 alt={`Screenshot of ${domain}`}
-                width={800}
-                height={600}
-                className="w-full object-cover"
-                style={{ maxHeight: "200px", objectPosition: "top" }}
+                className="object-cover"
+                fill
+                sizes="(max-width: 768px) 100vw, 600px"
               />
-              <div 
-                className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white to-transparent"
-                aria-hidden="true"
-              ></div>
-              <div className="absolute bottom-2 right-2 bg-blue-600 text-white text-xs py-1 px-2 rounded">
-                Click to enlarge
+              <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs py-1 px-2 rounded">
+                Preview
               </div>
             </div>
           </div>
         )}
-      </div>
 
-      {/* Risk Factors */}
-      {(risks.length > 0 || matches.length > 0 || whoisRiskFactors.length > 0 || patternAnalysis.riskFactors.length > 0) && (
-        <div className="border-b p-4 sm:p-6">
-          <h3 className="text-lg sm:text-xl font-bold mb-4 flex items-center">
-            <AlertTriangle className="w-5 h-5 mr-2 text-red-500" />
-            Risk Factors
+        {/* Summary section with large, easy to read text */}
+        <div className="mb-6">
+          <h3 className="text-xl font-bold text-gray-800 mb-3">Summary</h3>
+          <p className="text-lg text-gray-700 mb-4">{getVerdict()}</p>
+
+          {/* Improved key findings styling with consistent icons */}
+          {keyFindings.length > 0 && (
+            <div className="mt-3">
+              <h4 className="text-lg font-medium text-gray-800 mb-2">
+                Key Findings:
+              </h4>
+              <ul className="space-y-3">
+                {keyFindings.map((finding, index) => {
+                  // Select icon and style based on score
+                  let iconElement;
+                  let bgClass;
+                  let borderClass;
+
+                  if (score >= 80) {
+                    iconElement = (
+                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2 mt-0.5 flex-shrink-0" />
+                    );
+                    bgClass = "bg-emerald-50";
+                    borderClass = "border-emerald-100";
+                  } else if (score >= 60) {
+                    iconElement = (
+                      <ThumbsUp className="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                    );
+                    bgClass = "bg-green-50";
+                    borderClass = "border-green-100";
+                  } else if (score >= 40) {
+                    iconElement = (
+                      <AlertTriangle className="w-5 h-5 text-yellow-500 mr-2 mt-0.5 flex-shrink-0" />
+                    );
+                    bgClass = "bg-yellow-50";
+                    borderClass = "border-yellow-100";
+                  } else {
+                    iconElement = (
+                      <XCircle className="w-5 h-5 text-red-500 mr-2 mt-0.5 flex-shrink-0" />
+                    );
+                    bgClass = "bg-red-50";
+                    borderClass = "border-red-100";
+                  }
+
+                  return (
+                    <li
+                      key={index}
+                      className={`p-3 rounded-lg flex items-start ${bgClass} border ${borderClass}`}
+                    >
+                      {iconElement}
+                      <span className="text-base">{finding}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        {/* Simple stats in easy to read format */}
+        <div className="mb-6">
+          <h3 className="text-xl font-bold text-gray-800 mb-2">
+            Important Information
           </h3>
 
-          <div className="space-y-4">
-            {/* AI-detected risks */}
-            {risks.length > 0 && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <h4 className="font-bold text-red-700 mb-2">AI Analysis Detected:</h4>
-                <ul className="space-y-2">
-                  {risks.map((risk, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="text-red-500 mr-2">
-                        {risk.match(/(❌|⚠️|🔴|🟠)/) || "⚠️"}
-                      </span>
-                      <span className="text-gray-700">
-                        {risk.replace(/(❌|⚠️|🔴|🟠)\s*/, "")}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Website Age */}
+            <div
+              className={`p-4 rounded-lg border ${
+                whoisData.domainAge && whoisData.domainAge < 60
+                  ? "border-yellow-200 bg-yellow-50"
+                  : "border-gray-200 bg-gray-50"
+              }`}
+            >
+              <div className="flex items-center mb-2">
+                <Clock className="w-6 h-6 mr-2 text-gray-600" />
+                <h4 className="text-lg font-medium text-gray-800">
+                  Website Age
+                </h4>
               </div>
-            )}
+              <p className="text-base text-gray-700">
+                {formatDomainAge(whoisData.domainAge)}
+                {whoisData.domainAge && whoisData.domainAge < 60 && (
+                  <span className="block text-sm text-yellow-700 mt-1">
+                    ⚠️ New websites may be riskier
+                  </span>
+                )}
+              </p>
+            </div>
 
-            {/* Google Safe Browsing Threats */}
-            {matches.length > 0 && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <h4 className="font-bold text-red-700 mb-2">Security Threats Detected:</h4>
-                <ul className="space-y-2">
-                  {matches.map((match, index) => (
-                    <li key={index} className="flex items-start">
-                      <AlertOctagon className="w-4 h-4 text-red-500 mr-2 mt-0.5" />
-                      <span className="text-gray-700">
-                        {match.threatType} threat detected ({match.platformType})
+            {/* Security Check */}
+            <div
+              className={`p-4 rounded-lg border ${
+                isMalicious
+                  ? "border-red-200 bg-red-50"
+                  : "border-green-200 bg-green-50"
+              }`}
+            >
+              <div className="flex items-center mb-2">
+                <Shield className="w-6 h-6 mr-2 text-gray-600" />
+                <h4 className="text-lg font-medium text-gray-800">
+                  Security Check
+                </h4>
+              </div>
+              <p className="text-base flex items-center">
+                {isMalicious ? (
+                  <>
+                    <XCircle className="w-5 h-5 text-red-500 mr-2" />
+                    <span className="text-red-700">Known threats detected</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                    <span className="text-green-700">No known threats</span>
+                  </>
+                )}
+              </p>
+            </div>
+
+            {/* HTTPS Security */}
+            <div
+              className={`p-4 rounded-lg border ${
+                ssl.valid
+                  ? "border-green-200 bg-green-50"
+                  : "border-red-200 bg-red-50"
+              }`}
+            >
+              <div className="flex items-center mb-2">
+                <Lock className="w-6 h-6 mr-2 text-gray-600" />
+                <h4 className="text-lg font-medium text-gray-800">
+                  Connection Security
+                </h4>
+              </div>
+              <p className="text-base flex items-center">
+                {ssl.valid ? (
+                  <>
+                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                    <span className="text-green-700">Secure connection</span>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-5 h-5 text-red-500 mr-2" />
+                    <span className="text-red-700">Not secure</span>
+                  </>
+                )}
+              </p>
+            </div>
+
+            {/* Registration Info */}
+            <div className="p-4 rounded-lg border border-gray-200 bg-gray-50">
+              <div className="flex items-center mb-2">
+                <Info className="w-6 h-6 mr-2 text-gray-600" />
+                <h4 className="text-lg font-medium text-gray-800">
+                  Registration
+                </h4>
+              </div>
+              <p className="text-base text-gray-700">
+                {whoisData.registrantOrganization ||
+                whoisData.registrantCountry ? (
+                  <>
+                    {whoisData.registrantOrganization && (
+                      <span className="block">
+                        {whoisData.registrantOrganization}
                       </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* WHOIS Risk Factors */}
-            {whoisRiskFactors.length > 0 && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <h4 className="font-bold text-yellow-700 mb-2">Domain Registration Concerns:</h4>
-                <ul className="space-y-2">
-                  {whoisRiskFactors.map((factor, index) => (
-                    <li key={index} className="flex items-start">
-                      <AlertTriangle className="w-4 h-4 text-yellow-500 mr-2 mt-0.5" />
-                      <span className="text-gray-700">{factor}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Pattern Analysis Risk Factors */}
-            {patternAnalysis.riskFactors.length > 0 && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <h4 className="font-bold text-yellow-700 mb-2">Suspicious Patterns:</h4>
-                <ul className="space-y-2">
-                  {patternAnalysis.riskFactors.map((factor, index) => (
-                    <li key={index} className="flex items-start">
-                      <Info className="w-4 h-4 text-yellow-500 mr-2 mt-0.5" />
-                      <span className="text-gray-700">{factor}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+                    )}
+                    {whoisData.registrantCountry && (
+                      <span className="block">
+                        {whoisData.registrantCountry}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  "Information not available"
+                )}
+              </p>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Safety Recommendations */}
-      {advice.length > 0 && (
-        <div className="border-b p-4 sm:p-6">
-          <h3 className="text-lg sm:text-xl font-bold mb-4 flex items-center">
-            <Shield className="w-5 h-5 mr-2 text-blue-500" />
-            Safety Recommendations
-          </h3>
+        {/* Recommendations section */}
+        {recommendations.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-xl font-bold text-gray-800 mb-3">
+              What Should You Do?
+            </h3>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <ul className="space-y-3">
+                {recommendations.map((rec, index) => (
+                  <li key={index} className="flex items-start">
+                    <HelpCircle className="w-5 h-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
+                    <span className="text-base text-gray-700">{rec}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <ul className="space-y-3">
-              {advice.map((item, index) => (
-                <li key={index} className="flex items-start">
-                  <span className="text-blue-500 mr-2">
-                    {item.match(/(💡|✅|🟢)/) || "💡"}
-                  </span>
-                  <span className="text-gray-700">
-                    {item.replace(/(💡|✅|🟢)\s*/, "")}
+        {/* Expandable technical details section */}
+        <div className="mt-6">
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            className="flex items-center justify-between w-full px-4 py-2 text-left text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+          >
+            <span className="text-base font-medium">Technical Details</span>
+            <ChevronDown
+              className={`w-5 h-5 transform ${showDetails ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {showDetails && (
+            <div className="mt-2 p-4 border border-gray-200 rounded-lg text-sm">
+              {/* WHOIS Details */}
+              <div className="mb-4">
+                <h4 className="font-medium text-gray-800 mb-2">
+                  Domain Information
+                </h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="text-gray-600">Created:</div>
+                  <div>{formatDate(whoisData.creationDate)}</div>
+
+                  <div className="text-gray-600">Expires:</div>
+                  <div>{formatDate(whoisData.expirationDate)}</div>
+
+                  <div className="text-gray-600">Registrar:</div>
+                  <div className="break-words">
+                    {whoisData.registrar || "Unknown"}
+                  </div>
+
+                  {whoisData.privacyProtected !== undefined && (
+                    <>
+                      <div className="text-gray-600">Privacy Protected:</div>
+                      <div>{whoisData.privacyProtected ? "Yes" : "No"}</div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Security Details */}
+              <div>
+                <h4 className="font-medium text-gray-800 mb-2">
+                  Security Details
+                </h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="text-gray-600">SSL Valid:</div>
+                  <div>{ssl.valid ? "Yes" : "No"}</div>
+
+                  {ssl.valid && ssl.issuer && (
+                    <>
+                      <div className="text-gray-600">SSL Issuer:</div>
+                      <div className="break-words">{ssl.issuer}</div>
+                    </>
+                  )}
+
+                  {isMalicious && matches && matches.length > 0 && (
+                    <>
+                      <div className="text-gray-600">Threat Types:</div>
+                      <div>
+                        <ul className="list-disc pl-4">
+                          {matches.map((match, index) => (
+                            <li key={index}>
+                              {match.threatType} ({match.platformType})
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </>
+                  )}
+
+                  {patternAnalysis.riskFactors.length > 0 && (
+                    <>
+                      <div className="text-gray-600 col-span-2 mt-2 mb-1">
+                        AI-Detected Patterns:
+                      </div>
+                      <div className="col-span-2">
+                        <ul className="list-disc pl-4">
+                          {patternAnalysis.riskFactors.map((factor, index) => (
+                            <li key={index}>{factor}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Need help section */}
+        <div className="mt-6">
+          <button
+            onClick={() => setShowHelp(!showHelp)}
+            className="flex items-center justify-between w-full px-4 py-2 text-left text-gray-700 bg-blue-50 rounded-lg hover:bg-blue-100 border border-blue-200"
+          >
+            <span className="text-base font-medium">
+              Need Help Understanding This Report?
+            </span>
+            <ChevronDown
+              className={`w-5 h-5 transform ${showHelp ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {showHelp && (
+            <div className="mt-2 p-4 border border-blue-200 rounded-lg bg-blue-50">
+              <h4 className="font-medium text-gray-800 mb-2">
+                Understanding This Security Report
+              </h4>
+              <ul className="space-y-2 text-gray-700">
+                <li className="flex items-start">
+                  <span className="font-medium mr-2">•</span>
+                  <span>
+                    The <strong>safety score</strong> (out of 100) shows how
+                    safe the website likely is. Higher is better.
                   </span>
                 </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
+                <li className="flex items-start">
+                  <span className="font-medium mr-2">•</span>
+                  <span>
+                    <strong>Website age</strong> matters because scammers often
+                    use new websites.
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <span className="font-medium mr-2">•</span>
+                  <span>
+                    The <strong>security check</strong> tells you if this
+                    website has been reported for harmful content.
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <span className="font-medium mr-2">•</span>
+                  <span>
+                    <strong>Connection security</strong> shows if the website
+                    uses proper encryption to protect your information.
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <span className="font-medium mr-2">•</span>
+                  <span>
+                    If you're unsure about a website, always follow the
+                    recommendations in this report.
+                  </span>
+                </li>
+              </ul>
 
-      {/* Domain Details */}
-      <div className="p-4 sm:p-6">
-        <h3 className="text-lg sm:text-xl font-bold mb-4">Domain Details</h3>
-
-        <div className="bg-gray-50 rounded-lg border overflow-hidden">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4">
-            <div className="space-y-2">
-              <div>
-                <span className="text-sm text-gray-500">Created On:</span>
-                <p className="font-medium">{formatDate(whoisData.creationDate)}</p>
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="font-medium text-yellow-800">Need more help?</p>
+                <p className="text-gray-700">
+                  If you're still unsure about this website, consider asking a
+                  trusted friend or family member to review it with you before
+                  sharing any personal information or making purchases.
+                </p>
               </div>
-              
-              {whoisData.expirationDate && (
-                <div>
-                  <span className="text-sm text-gray-500">Expires On:</span>
-                  <p className="font-medium">{formatDate(whoisData.expirationDate)}</p>
-                </div>
-              )}
-              
-              {whoisData.registrar && (
-                <div>
-                  <span className="text-sm text-gray-500">Registrar:</span>
-                  <p className="font-medium">{whoisData.registrar}</p>
-                </div>
-              )}
             </div>
-            
-            <div className="space-y-2">
-              {whoisData.registrantOrganization && (
-                <div>
-                  <span className="text-sm text-gray-500">Organization:</span>
-                  <p className="font-medium">{whoisData.registrantOrganization}</p>
-                </div>
-              )}
-              
-              {whoisData.registrantCountry && (
-                <div className="flex items-center">
-                  <span className="text-sm text-gray-500 mr-1">Country:</span>
-                  <p className="font-medium flex items-center">
-                    <MapPin size={14} className="mr-1 text-gray-500" />
-                    {whoisData.registrantCountry}
-                  </p>
-                </div>
-              )}
-              
-              {ssl.issuer && (
-                <div>
-                  <span className="text-sm text-gray-500">SSL Issuer:</span>
-                  <p className="font-medium truncate" title={ssl.issuer}>
-                    {ssl.issuer}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
+          )}
         </div>
       </div>
-
-      {/* Full-size screenshot modal */}
-      {showFullScreenshot && screenshot && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowFullScreenshot(false)}
-        >
-          <div className="relative max-w-4xl max-h-[90vh] w-full bg-white p-2 rounded-lg">
-            <button
-              className="absolute top-3 right-3 bg-gray-200 text-gray-800 p-1 rounded-full z-10"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowFullScreenshot(false);
-              }}
-            >
-              <X size={20} />
-            </button>
-            <img
-              src={screenshot}
-              alt={`Full screenshot of ${domain}`}
-              className="w-full h-auto object-contain rounded"
-            />
-            <div className="absolute bottom-4 left-4 right-4 bg-black bg-opacity-70 text-white py-2 px-4 rounded text-center">
-              Screenshot of {domain} - Click anywhere to close
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

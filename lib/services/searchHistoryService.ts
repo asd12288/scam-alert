@@ -46,12 +46,6 @@ export async function saveDomainSearch(
     } = data;
 
     const normalizedDomain = domain.toLowerCase().trim();
-    
-    // Ensure numeric values for database columns
-    const safeScore = typeof score === 'number' && !isNaN(score) ? score : 0;
-    const safeDomainAge = whois?.data?.domainAge 
-      ? Number(whois.data.domainAge) 
-      : null;
 
     // 1. First update the domain_stats table (create or update)
     const { data: existingStats, error: statsQueryError } = await supabase
@@ -64,6 +58,14 @@ export async function saveDomainSearch(
       console.error("Error checking domain stats:", statsQueryError);
       return false;
     }
+
+    // Parse domain age as integer or null if invalid
+    const domainAge = whois?.data?.domainAge
+      ? parseInt(String(whois.data.domainAge), 10)
+      : null;
+
+    // Ensure score is a valid integer
+    const validScore = typeof score === "number" ? score : 0;
 
     // If domain exists in stats table, update it
     if (existingStats && existingStats.length > 0) {
@@ -80,10 +82,10 @@ export async function saveDomainSearch(
       const { error: updateError } = await supabase
         .from("domain_stats")
         .update({
-          last_score: safeScore,
+          last_score: validScore,
           is_malicious: safeBrowsing?.isMalicious || false,
-          ssl_valid: ssl?.valid || false,
-          domain_age: safeDomainAge,
+          ssl_valid: ssl?.valid,
+          domain_age: domainAge,
           search_count: newSearchCount,
           screenshot: screenshotToUse,
           last_search_data: {
@@ -106,10 +108,10 @@ export async function saveDomainSearch(
         .insert({
           domain: normalizedDomain,
           search_count: 1,
-          last_score: safeScore,
+          last_score: validScore,
           is_malicious: safeBrowsing?.isMalicious || false,
-          ssl_valid: ssl?.valid || false,
-          domain_age: safeDomainAge,
+          ssl_valid: ssl?.valid,
+          domain_age: domainAge,
           screenshot,
           last_search_data: {
             details: data.details,
@@ -131,10 +133,10 @@ export async function saveDomainSearch(
       .insert({
         user_id: userId || null,
         domain: normalizedDomain,
-        score: safeScore,
+        score: validScore,
         is_malicious: safeBrowsing?.isMalicious || false,
-        ssl_valid: ssl?.valid || false,
-        domain_age: safeDomainAge,
+        ssl_valid: ssl?.valid,
+        domain_age: domainAge,
         search_count: 1, // Always 1 for individual searches
         screenshot, // Still store screenshot per search
         search_data: {

@@ -12,8 +12,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`Attempting to capture screenshot for domain: ${domain}`);
-
     // Use smaller dimensions for thumbnail screenshots
     const screenshot = await captureScreenshot(domain, {
       width: 1024,
@@ -24,18 +22,16 @@ export async function POST(request: NextRequest) {
     });
 
     if (screenshot) {
-      console.log(`Screenshot captured successfully for ${domain}`);
       return NextResponse.json({
         success: true,
         screenshot: `data:image/jpeg;base64,${screenshot}`,
       });
     } else {
-      console.log(`Failed to capture screenshot for ${domain}`);
       return NextResponse.json(
         {
           success: false,
           error: "Failed to capture screenshot",
-          fallbackImage: "/screenshot-unavailable.svg", // Updated to use .svg instead of .png
+          fallbackImage: "/screenshot-unavailable.png",
         },
         { status: 200 } // Still return 200 to handle gracefully on client
       );
@@ -46,7 +42,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: "Failed to process screenshot request",
-        fallbackImage: "/screenshot-unavailable.svg", // Updated to use .svg instead of .png
+        fallbackImage: "/screenshot-unavailable.png",
       },
       { status: 500 }
     );
