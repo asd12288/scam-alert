@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getBlogPosts, deleteBlogPost, BlogPost } from "@/lib/supabase";
-import { Edit, Plus, Trash2, Eye, Clock } from "lucide-react";
+import { Edit, Plus, Trash2, Eye, Clock, Settings } from "lucide-react";
 import { format, isValid, parseISO } from "date-fns";
 
 // Helper function to safely format dates
@@ -56,13 +56,22 @@ export default function AdminBlogs() {
     <div className="py-6 px-4 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Blog Posts</h1>
-        <Link
-          href="/admin/blogs/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors inline-flex items-center"
-        >
-          <Plus size={16} className="mr-1" />
-          Create Post
-        </Link>
+        <div className="flex space-x-3">
+          <Link
+            href="/admin/blogs/automation"
+            className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50 transition-colors inline-flex items-center"
+          >
+            <Settings size={16} className="mr-1" />
+            Automation
+          </Link>
+          <Link
+            href="/admin/blogs/new"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors inline-flex items-center"
+          >
+            <Plus size={16} className="mr-1" />
+            Create Post
+          </Link>
+        </div>
       </div>
 
       {loading ? (
@@ -78,13 +87,22 @@ export default function AdminBlogs() {
           <p className="text-gray-500 mb-6">
             Create your first blog post to get started
           </p>
-          <Link
-            href="/admin/blogs/new"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors inline-flex items-center"
-          >
-            <Plus size={16} className="mr-1" />
-            Create Your First Post
-          </Link>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link
+              href="/admin/blogs/automation"
+              className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50 transition-colors inline-flex items-center justify-center"
+            >
+              <Settings size={16} className="mr-1" />
+              Set Up Automation
+            </Link>
+            <Link
+              href="/admin/blogs/new"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors inline-flex items-center justify-center"
+            >
+              <Plus size={16} className="mr-1" />
+              Create Your First Post
+            </Link>
+          </div>
         </div>
       ) : (
         <>
