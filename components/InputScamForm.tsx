@@ -86,6 +86,9 @@ const InputScam = ({ onResultsChange }: InputScamProps) => {
         domain: result.domain || values.domain,
         aiSummary: result.aiSummary,
         details: result.details || {},
+        screenshot: result.screenshot, // Include the screenshot from the API response
+        searchCount: result.searchCount,
+        cached: result.cached,
       });
     } catch (error: any) {
       console.error("Error checking domain:", error);

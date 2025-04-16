@@ -169,7 +169,12 @@ export async function POST(request: NextRequest) {
     securityDetails.patternAnalysis = patternAnalysis;
 
     // Calculate comprehensive security score
-    const score = calculateSecurityScore(securityDetails);
+    const score = await calculateSecurityScore(securityDetails, cleanDomain);
+
+    // Ensure numeric values for database columns to avoid type errors
+    const safeWhoisDomainAge = whoisResult?.data?.domainAge 
+      ? Number(whoisResult.data.domainAge) 
+      : null;
 
     // Generate AI summary with the correct data structure
     // Only pass properties that the SecurityData interface expects

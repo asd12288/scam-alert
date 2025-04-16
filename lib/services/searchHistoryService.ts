@@ -46,6 +46,12 @@ export async function saveDomainSearch(
     } = data;
 
     const normalizedDomain = domain.toLowerCase().trim();
+    
+    // Ensure numeric values for database columns
+    const safeScore = typeof score === 'number' && !isNaN(score) ? score : 0;
+    const safeDomainAge = whois?.data?.domainAge 
+      ? Number(whois.data.domainAge) 
+      : null;
 
     // 1. First update the domain_stats table (create or update)
     const { data: existingStats, error: statsQueryError } = await supabase
@@ -74,10 +80,10 @@ export async function saveDomainSearch(
       const { error: updateError } = await supabase
         .from("domain_stats")
         .update({
-          last_score: score,
+          last_score: safeScore,
           is_malicious: safeBrowsing?.isMalicious || false,
-          ssl_valid: ssl?.valid,
-          domain_age: whois?.data?.domainAge,
+          ssl_valid: ssl?.valid || false,
+          domain_age: safeDomainAge,
           search_count: newSearchCount,
           screenshot: screenshotToUse,
           last_search_data: {
@@ -100,10 +106,10 @@ export async function saveDomainSearch(
         .insert({
           domain: normalizedDomain,
           search_count: 1,
-          last_score: score,
+          last_score: safeScore,
           is_malicious: safeBrowsing?.isMalicious || false,
-          ssl_valid: ssl?.valid,
-          domain_age: whois?.data?.domainAge,
+          ssl_valid: ssl?.valid || false,
+          domain_age: safeDomainAge,
           screenshot,
           last_search_data: {
             details: data.details,
@@ -125,10 +131,10 @@ export async function saveDomainSearch(
       .insert({
         user_id: userId || null,
         domain: normalizedDomain,
-        score,
+        score: safeScore,
         is_malicious: safeBrowsing?.isMalicious || false,
-        ssl_valid: ssl?.valid,
-        domain_age: whois?.data?.domainAge,
+        ssl_valid: ssl?.valid || false,
+        domain_age: safeDomainAge,
         search_count: 1, // Always 1 for individual searches
         screenshot, // Still store screenshot per search
         search_data: {

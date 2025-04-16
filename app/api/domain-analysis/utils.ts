@@ -93,7 +93,8 @@ export interface SecurityDetails {
  * @returns A score from 0-100 where higher is safer
  */
 export async function calculateSecurityScore(
-  securityDetails: Partial<SecurityDetails>
+  securityDetails: Partial<SecurityDetails>,
+  domain?: string
 ): Promise<number> {
   // Get configuration from database
   let weights: ScoringWeights;
@@ -124,6 +125,29 @@ export async function calculateSecurityScore(
 
   // Initialize with the baseline score from configuration
   let score = weights.baselineScore;
+  
+  // Pre-check for well-known trusted domains
+  const trustedDomains = [
+    'google.com', 'youtube.com', 'facebook.com', 'amazon.com', 'microsoft.com', 
+    'apple.com', 'netflix.com', 'twitter.com', 'instagram.com', 'linkedin.com',
+    'github.com', 'wikipedia.org', 'yahoo.com', 'reddit.com', 'twitch.tv',
+    'pinterest.com', 'ebay.com', 'cnn.com', 'nytimes.com', 'bbc.com'
+  ];
+
+  // Use the actual domain passed to the function instead of trying to extract it from safeBrowsing matches
+  const domainBeingChecked = domain || "";
+  
+  // Check if the domain matches or is a subdomain of any trusted domain
+  const isWellKnownDomain = trustedDomains.some(trustedDomain => 
+    domainBeingChecked === trustedDomain || 
+    domainBeingChecked.endsWith(`.${trustedDomain}`)
+  );
+
+  // Give an automatic high score for well-known trusted domains
+  if (isWellKnownDomain) {
+    console.log(`Detected trusted domain: ${domainBeingChecked}, assigning high score`);
+    return 95; // Return a very high score for well-known trusted domains
+  }
 
   // Safe Browsing penalties - highest weighted factor
   if (securityDetails.safeBrowsing?.isMalicious) {
@@ -158,13 +182,13 @@ export async function calculateSecurityScore(
       score += weights.domainAge * 0.7;
     }
 
-    // Configurable penalty for privacy protection
-    if (securityDetails.whois.data.privacyProtected) {
-      score -= penalties.privacyProtection;
+    // Configurable penalty for privacy protection - reduced impact
+    if (securityDetails.whois?.data.privacyProtected) {
+      score -= penalties.privacyProtection * 0.5; // Reduced penalty as many legitimate sites use privacy
     }
   } else if (securityDetails.whois?.error) {
-    // Configurable penalty if WHOIS data couldn't be retrieved
-    score -= penalties.whoisError;
+    // Reduced penalty if WHOIS data couldn't be retrieved
+    score -= penalties.whoisError * 0.5; // Many legitimate sites might block WHOIS
   }
 
   // SSL certificate evaluation
@@ -183,7 +207,7 @@ export async function calculateSecurityScore(
           score -= weights.ssl * 0.4;
         } else {
           // Bonus for valid certificate with good lifetime
-          score += weights.ssl * 0.4;
+          score += weights.ssl * 0.5;
 
           // Extra bonus for EV certificates (typically indicated in issuer)
           if (
@@ -194,6 +218,9 @@ export async function calculateSecurityScore(
             score += 7; // Increased bonus for EV certificates
           }
         }
+      } else {
+        // If we have valid SSL but no days remaining info, still give a bonus
+        score += weights.ssl * 0.3;
       }
     }
   }
@@ -212,32 +239,40 @@ export async function calculateSecurityScore(
     score += (dnsScore / 15) * weights.dns;
   }
 
-  // Apply pattern analysis penalties
+  // Apply pattern analysis penalties - with ceiling
   const suspiciousScore = securityDetails.patternAnalysis?.suspiciousScore || 0;
-  score -= (suspiciousScore / 100) * weights.patternAnalysis;
+  // Cap the pattern analysis penalty to prevent excessive penalties
+  const maxPatternPenalty = weights.patternAnalysis * 0.8;
+  const patternPenalty = (suspiciousScore / 100) * weights.patternAnalysis;
+  score -= Math.min(patternPenalty, maxPatternPenalty);
 
-  // Apply bonus for major verified domains (using a heuristic approach)
+  // Apply bonus for major verified domains with strong positive signals
   if (
     securityDetails.whois?.data &&
-    !securityDetails.safeBrowsing?.isMalicious
+    !securityDetails.safeBrowsing?.isMalicious &&
+    securityDetails.ssl?.valid
   ) {
-    // Check if the domain is older than 5 years and has valid SSL
+    // Check if the domain is older than 3 years and has valid SSL
     const isEstablishedDomain =
-      (securityDetails.whois.data.domainAge || 0) > 1825 &&
+      (securityDetails.whois.data.domainAge || 0) > 1095 &&
       securityDetails.ssl?.valid === true;
 
     // Check if it has proper DNS security configuration
     const hasGoodSecurity =
-      securityDetails.dns?.hasSPF === true &&
+      securityDetails.dns?.hasSPF === true ||
       securityDetails.dns?.hasDMARC === true;
 
     // Award bonus points for well-established domains with good security
-    if (isEstablishedDomain && hasGoodSecurity) {
-      score += 5;
+    if (isEstablishedDomain) {
+      score += 5; // Base bonus for established domains
+      
+      if (hasGoodSecurity) {
+        score += 5; // Additional bonus for good security
+      }
     }
   }
 
-  // Adjust based on combined risk factors count from all sources
+  // Adjust based on combined risk factors count from all sources - with more gradual penalties
   const totalRiskFactors = [
     ...(securityDetails.whois?.riskFactors || []),
     ...(securityDetails.dns?.riskFactors || []),
@@ -245,9 +280,14 @@ export async function calculateSecurityScore(
   ].length;
 
   if (totalRiskFactors > 5) {
-    score -= penalties.manyRiskFactors;
+    score -= penalties.manyRiskFactors * 0.8;
   } else if (totalRiskFactors > 2) {
-    score -= penalties.severalRiskFactors;
+    score -= penalties.severalRiskFactors * 0.8;
+  }
+
+  // Ensure minimum score for sites with valid SSL and not flagged by Safe Browsing
+  if (securityDetails.ssl?.valid && !securityDetails.safeBrowsing?.isMalicious) {
+    score = Math.max(score, 40); // Minimum score for sites with SSL that aren't flagged
   }
 
   // Ensure score stays within 0-100 range

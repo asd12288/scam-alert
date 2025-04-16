@@ -52,18 +52,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      {/* Debug display - only rendered on client after mount to avoid hydration issues */}
-      {mounted && process.env.NODE_ENV === "development" && (
-        <div className="bg-yellow-100 text-xs p-1 text-center">
-          Auth:{" "}
-          {loading
-            ? "Loading..."
-            : user
-            ? `Logged in as: ${user.email} (${isAdmin ? "Admin" : "User"})`
-            : "Not logged in"}
-        </div>
-      )}
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">    
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Name */}
