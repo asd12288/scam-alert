@@ -38,23 +38,28 @@ export async function POST(request: NextRequest) {
     // Get authorization header if present (for direct API calls)
     const authHeader = request.headers.get("authorization");
     // Check if we're in development mode
-    const isDevelopment = process.env.NODE_ENV === "development" || 
-                          process.env.NEXT_PUBLIC_IS_DEVELOPMENT === "true";
-    
+    const isDevelopment =
+      process.env.NODE_ENV === "development" ||
+      process.env.NEXT_PUBLIC_IS_DEVELOPMENT === "true";
+
     // Parse request body to get topic preference or use random
     const body = await request.json().catch(() => ({}));
-    
+
     // Skip authentication in development mode or if using service role key
     let skipAuthCheck = isDevelopment;
-    
+
     // Check for service role key in authorization header
-    if (authHeader && authHeader.startsWith("Bearer ") && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    if (
+      authHeader &&
+      authHeader.startsWith("Bearer ") &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    ) {
       const token = authHeader.substring(7); // Remove "Bearer " prefix
       if (token === process.env.SUPABASE_SERVICE_ROLE_KEY) {
         skipAuthCheck = true;
       }
     }
-    
+
     // Verify authorization if not skipping auth check
     if (!skipAuthCheck) {
       const cookieStore = cookies();
@@ -65,9 +70,10 @@ export async function POST(request: NextRequest) {
 
       if (!session) {
         return NextResponse.json(
-          { 
+          {
             error: "Authentication required",
-            details: "You must be logged in to generate blog posts. In development mode, you can add NEXT_PUBLIC_IS_DEVELOPMENT=true to your .env.local file to bypass authentication."
+            details:
+              "You must be logged in to generate blog posts. In development mode, you can add NEXT_PUBLIC_IS_DEVELOPMENT=true to your .env.local file to bypass authentication.",
           },
           { status: 401 }
         );
@@ -87,30 +93,30 @@ export async function POST(request: NextRequest) {
         );
       }
     }
-    
+
     // Default to published=false to allow review before publishing
     const defaultToPublished = body.autoPublish === true;
     const forceTopic = body.topic;
-    
+
     // Select a random topic or use the provided one
-    const topic = forceTopic || 
-      BLOG_TOPICS[Math.floor(Math.random() * BLOG_TOPICS.length)];
-    
+    const topic =
+      forceTopic || BLOG_TOPICS[Math.floor(Math.random() * BLOG_TOPICS.length)];
+
     console.log(`[BlogGenerator] Generating blog about: ${topic}`);
 
     // Generate blog content using OpenAI
     const blogContent = await generateBlogContent(topic);
-    
+
     if (!blogContent) {
       return NextResponse.json(
         { error: "Failed to generate blog content" },
         { status: 500 }
       );
     }
-    
+
     // Create a slug from the title
     const slug = slugify(blogContent.title);
-    
+
     // Insert the blog post into the database
     const { data, error } = await createBlogPost({
       title: blogContent.title,
@@ -121,14 +127,14 @@ export async function POST(request: NextRequest) {
       author: "AI Scam Alert Team",
       tags: blogContent.tags,
     });
-    
+
     if (error) {
       return NextResponse.json(
         { error: `Failed to save blog post: ${error.message}` },
         { status: 500 }
       );
     }
-    
+
     return NextResponse.json({
       success: true,
       message: "Blog post generated successfully",
@@ -137,7 +143,7 @@ export async function POST(request: NextRequest) {
         title: blogContent.title,
         slug,
         published: defaultToPublished,
-      }
+      },
     });
   } catch (error) {
     console.error("[BlogGenerator] Error:", error);
@@ -186,15 +192,16 @@ async function generateBlogContent(topic: string): Promise<{
       messages: [
         {
           role: "system",
-          content: "You are a cybersecurity expert who specializes in educating the public about online scams and fraud. Write with authority but in an accessible style that general readers can understand."
+          content:
+            "You are a cybersecurity expert who specializes in educating the public about online scams and fraud. Write with authority but in an accessible style that general readers can understand.",
         },
-        { role: "user", content: prompt }
+        { role: "user", content: prompt },
       ],
       temperature: 0.7,
       response_format: { type: "json_object" },
     });
 
-    // Parse the response 
+    // Parse the response
     const content = response.choices[0].message.content;
     if (!content) {
       throw new Error("No content generated");

@@ -10,14 +10,19 @@ export async function GET(request: NextRequest) {
     // Get authorization header if present (for direct API calls)
     const authHeader = request.headers.get("authorization");
     // Check if we're in development mode
-    const isDevelopment = process.env.NODE_ENV === "development" || 
-                          process.env.NEXT_PUBLIC_IS_DEVELOPMENT === "true";
-    
+    const isDevelopment =
+      process.env.NODE_ENV === "development" ||
+      process.env.NEXT_PUBLIC_IS_DEVELOPMENT === "true";
+
     // Skip authentication in development mode or if using service role key
     let skipAuthCheck = isDevelopment;
-    
+
     // Check for service role key in authorization header
-    if (authHeader && authHeader.startsWith("Bearer ") && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    if (
+      authHeader &&
+      authHeader.startsWith("Bearer ") &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    ) {
       const token = authHeader.substring(7); // Remove "Bearer " prefix
       if (token === process.env.SUPABASE_SERVICE_ROLE_KEY) {
         skipAuthCheck = true;
@@ -27,7 +32,7 @@ export async function GET(request: NextRequest) {
     const cookieStore = cookies();
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
+
     // Create a standard client for authentication check
     const supabase = createClient(supabaseUrl!, supabaseAnonKey!, {
       cookies: {
@@ -36,7 +41,7 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-    
+
     // Verify authorization if not skipping auth check
     if (!skipAuthCheck) {
       const {
@@ -45,9 +50,10 @@ export async function GET(request: NextRequest) {
 
       if (!session) {
         return NextResponse.json(
-          { 
+          {
             error: "Authentication required",
-            details: "You must be logged in as an admin. In development mode, add NEXT_PUBLIC_IS_DEVELOPMENT=true to your .env.local file to bypass authentication."
+            details:
+              "You must be logged in as an admin. In development mode, add NEXT_PUBLIC_IS_DEVELOPMENT=true to your .env.local file to bypass authentication.",
           },
           { status: 401 }
         );
@@ -79,7 +85,7 @@ export async function GET(request: NextRequest) {
 
     // Create a service role client that can bypass RLS policies
     const adminClient = createClient(supabaseUrl!, serviceRoleKey);
-    
+
     // Fetch all profiles
     const { data: profiles, error: profilesError } = await adminClient
       .from("profiles")
@@ -112,18 +118,23 @@ export async function PUT(request: NextRequest) {
     // Get authorization header if present (for direct API calls)
     const authHeader = request.headers.get("authorization");
     // Check if we're in development mode
-    const isDevelopment = process.env.NODE_ENV === "development" || 
-                          process.env.NEXT_PUBLIC_IS_DEVELOPMENT === "true";
-    
+    const isDevelopment =
+      process.env.NODE_ENV === "development" ||
+      process.env.NEXT_PUBLIC_IS_DEVELOPMENT === "true";
+
     // Parse request body to get user role update info
     const body = await request.json();
     const { userId, role } = body;
-    
+
     // Skip authentication in development mode or if using service role key
     let skipAuthCheck = isDevelopment;
-    
+
     // Check for service role key in authorization header
-    if (authHeader && authHeader.startsWith("Bearer ") && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    if (
+      authHeader &&
+      authHeader.startsWith("Bearer ") &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    ) {
       const token = authHeader.substring(7); // Remove "Bearer " prefix
       if (token === process.env.SUPABASE_SERVICE_ROLE_KEY) {
         skipAuthCheck = true;
@@ -133,7 +144,7 @@ export async function PUT(request: NextRequest) {
     const cookieStore = cookies();
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
+
     // Create a standard client for authentication check
     const supabase = createClient(supabaseUrl!, supabaseAnonKey!, {
       cookies: {
@@ -142,7 +153,7 @@ export async function PUT(request: NextRequest) {
         },
       },
     });
-    
+
     // Verify authorization if not skipping auth check
     if (!skipAuthCheck) {
       const {
@@ -151,9 +162,10 @@ export async function PUT(request: NextRequest) {
 
       if (!session) {
         return NextResponse.json(
-          { 
+          {
             error: "Authentication required",
-            details: "You must be logged in as an admin. In development mode, add NEXT_PUBLIC_IS_DEVELOPMENT=true to your .env.local file to bypass authentication."
+            details:
+              "You must be logged in as an admin. In development mode, add NEXT_PUBLIC_IS_DEVELOPMENT=true to your .env.local file to bypass authentication.",
           },
           { status: 401 }
         );
@@ -192,7 +204,7 @@ export async function PUT(request: NextRequest) {
 
     // Create a service role client that can bypass RLS policies
     const adminClient = createClient(supabaseUrl!, serviceRoleKey);
-    
+
     const { error } = await adminClient
       .from("profiles")
       .update({ role })

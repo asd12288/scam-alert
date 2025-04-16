@@ -30,20 +30,24 @@ export default function UserManagement() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Use the admin API endpoint to fetch all users
-      const response = await fetch('/api/admin/users');
-      
+      const response = await fetch("/api/admin/users");
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch users');
+        throw new Error(errorData.error || "Failed to fetch users");
       }
-      
+
       const data = await response.json();
       setUsers(data.users as UserProfile[]);
     } catch (error) {
       console.error("Error fetching users:", error);
-      setError(error instanceof Error ? error.message : 'An error occurred while fetching users');
+      setError(
+        error instanceof Error
+          ? error.message
+          : "An error occurred while fetching users"
+      );
     } finally {
       setLoading(false);
     }
@@ -52,21 +56,21 @@ export default function UserManagement() {
   const handleRoleChange = async (userId: string, role: "admin" | "user") => {
     try {
       setError(null);
-      
+
       // Use the admin API endpoint to update user role
-      const response = await fetch('/api/admin/users', {
-        method: 'PUT',
+      const response = await fetch("/api/admin/users", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ userId, role }),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update user role');
+        throw new Error(errorData.error || "Failed to update user role");
       }
-      
+
       // Update local state
       setUsers(
         users.map((user) => (user.id === userId ? { ...user, role } : user))
@@ -77,7 +81,11 @@ export default function UserManagement() {
       setTimeout(() => setUpdateSuccess(null), 3000);
     } catch (error) {
       console.error("Error updating user role:", error);
-      setError(error instanceof Error ? error.message : 'An error occurred while updating user role');
+      setError(
+        error instanceof Error
+          ? error.message
+          : "An error occurred while updating user role"
+      );
     } finally {
       setIsEditing(null);
     }
@@ -114,7 +122,7 @@ export default function UserManagement() {
           {updateSuccess}
         </div>
       )}
-      
+
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 flex items-center">
           <AlertCircle className="h-5 w-5 mr-2" />
@@ -184,7 +192,7 @@ export default function UserManagement() {
                       <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-medium">
                         {user.name
                           ? user.name[0].toUpperCase()
-                          : user.email?.[0]?.toUpperCase() || '?'}
+                          : user.email?.[0]?.toUpperCase() || "?"}
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
@@ -198,7 +206,7 @@ export default function UserManagement() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {user.email || 'No email'}
+                    {user.email || "No email"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {isEditing === user.id ? (
@@ -220,7 +228,7 @@ export default function UserManagement() {
                             : "bg-blue-100 text-blue-800"
                         }`}
                       >
-                        {user.role || 'user'}
+                        {user.role || "user"}
                       </span>
                     )}
                   </td>
@@ -261,7 +269,9 @@ export default function UserManagement() {
           </table>
         ) : (
           <div className="p-8 text-center text-gray-500">
-            {error ? "Error loading users. Please try again." : "No users found matching your search criteria."}
+            {error
+              ? "Error loading users. Please try again."
+              : "No users found matching your search criteria."}
           </div>
         )}
       </div>

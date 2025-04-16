@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Calendar, RotateCcw, Check, AlertCircle, BookOpen } from "lucide-react";
+import {
+  Calendar,
+  RotateCcw,
+  Check,
+  AlertCircle,
+  BookOpen,
+} from "lucide-react";
 import Link from "next/link";
 
 export default function BlogAutomationSettings() {
@@ -34,10 +40,16 @@ export default function BlogAutomationSettings() {
         throw new Error(data.error || "Failed to generate blog post");
       }
 
-      setSuccess(`Blog post "${data.data.title}" has been created successfully!`);
+      setSuccess(
+        `Blog post "${data.data.title}" has been created successfully!`
+      );
       setGeneratedPostId(data.data.id);
     } catch (err) {
-      setError(`Error: ${err instanceof Error ? err.message : "Failed to generate blog post"}`);
+      setError(
+        `Error: ${
+          err instanceof Error ? err.message : "Failed to generate blog post"
+        }`
+      );
     } finally {
       setGenerating(false);
     }
@@ -49,7 +61,7 @@ export default function BlogAutomationSettings() {
       setLoading(true);
       setError(null);
       setSuccess(null);
-      
+
       const response = await fetch("/api/admin/test-cron", {
         method: "POST",
         headers: {
@@ -63,9 +75,15 @@ export default function BlogAutomationSettings() {
         throw new Error(data.error || "Failed to test cron endpoint");
       }
 
-      setSuccess("Cron endpoint test was successful. Check the server logs for details.");
+      setSuccess(
+        "Cron endpoint test was successful. Check the server logs for details."
+      );
     } catch (err) {
-      setError(`Error: ${err instanceof Error ? err.message : "Failed to test cron endpoint"}`);
+      setError(
+        `Error: ${
+          err instanceof Error ? err.message : "Failed to test cron endpoint"
+        }`
+      );
     } finally {
       setLoading(false);
     }
@@ -100,8 +118,8 @@ export default function BlogAutomationSettings() {
             <p className="text-sm">{success}</p>
             {generatedPostId && (
               <p className="mt-2">
-                <Link 
-                  href={`/admin/blogs/${generatedPostId}/edit`} 
+                <Link
+                  href={`/admin/blogs/${generatedPostId}/edit`}
                   className="text-blue-600 hover:text-blue-800 underline flex items-center"
                 >
                   <BookOpen size={14} className="mr-1" />
@@ -119,8 +137,8 @@ export default function BlogAutomationSettings() {
           Generate Blog Post Manually
         </h2>
         <div className="mb-4">
-          <label 
-            htmlFor="topic" 
+          <label
+            htmlFor="topic"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
             Topic (Optional)
@@ -137,7 +155,7 @@ export default function BlogAutomationSettings() {
             If left empty, a random topic will be selected
           </p>
         </div>
-        
+
         <button
           onClick={generateBlogPost}
           disabled={generating}
@@ -161,26 +179,35 @@ export default function BlogAutomationSettings() {
         </h2>
         <div className="space-y-4">
           <p className="text-gray-700">
-            Daily blog generation is configured via an automated cron job. Each day, a new blog post about online safety and scams will be created automatically.
+            Daily blog generation is configured via an automated cron job. Each
+            day, a new blog post about online safety and scams will be created
+            automatically.
           </p>
-          
+
           <div className="border-l-4 border-blue-500 bg-blue-50 p-4">
             <h3 className="flex items-center text-md font-semibold text-gray-800 mb-2">
               <Calendar size={18} className="mr-2 text-blue-500" />
               How to configure the daily cron job
             </h3>
             <p className="text-gray-600 text-sm mb-2">
-              Set up a cron job with your hosting provider that calls the following endpoint daily:
+              Set up a cron job with your hosting provider that calls the
+              following endpoint daily:
             </p>
             <code className="bg-gray-100 text-gray-800 p-2 rounded block text-sm mb-2 overflow-auto">
-              GET {typeof window !== 'undefined' ? `${window.location.origin}/api/cron/generate-daily-blog` : 'https://yourdomain.com/api/cron/generate-daily-blog'}
+              GET{" "}
+              {typeof window !== "undefined"
+                ? `${window.location.origin}/api/cron/generate-daily-blog`
+                : "https://yourdomain.com/api/cron/generate-daily-blog"}
             </code>
             <p className="text-gray-600 text-sm">
-              Make sure to include an Authorization header:<br />
-              <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded">Authorization: Bearer YOUR_CRON_SECRET_KEY</code>
+              Make sure to include an Authorization header:
+              <br />
+              <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded">
+                Authorization: Bearer YOUR_CRON_SECRET_KEY
+              </code>
             </p>
           </div>
-          
+
           <div className="border-l-4 border-amber-500 bg-amber-50 p-4">
             <h3 className="flex items-center text-md font-semibold text-gray-800 mb-2">
               <AlertCircle size={18} className="mr-2 text-amber-500" />
@@ -190,9 +217,25 @@ export default function BlogAutomationSettings() {
               Set these environment variables on your hosting platform:
             </p>
             <ul className="list-disc list-inside text-gray-600 text-sm space-y-1">
-              <li><code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded">CRON_SECRET_KEY</code> - A secure random string for authenticating cron requests</li>
-              <li><code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded">AUTO_PUBLISH_BLOGS</code> - Set to "true" to auto-publish generated blogs, or "false" to save as drafts</li>
-              <li><code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded">OPENAI_API_KEY</code> - Your OpenAI API key</li>
+              <li>
+                <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded">
+                  CRON_SECRET_KEY
+                </code>{" "}
+                - A secure random string for authenticating cron requests
+              </li>
+              <li>
+                <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded">
+                  AUTO_PUBLISH_BLOGS
+                </code>{" "}
+                - Set to "true" to auto-publish generated blogs, or "false" to
+                save as drafts
+              </li>
+              <li>
+                <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded">
+                  OPENAI_API_KEY
+                </code>{" "}
+                - Your OpenAI API key
+              </li>
             </ul>
           </div>
         </div>
@@ -204,8 +247,9 @@ export default function BlogAutomationSettings() {
           Test Automation Connection
         </h2>
         <p className="text-gray-700 mb-4">
-          Test the blog generation system without having to wait for the cron job to run. 
-          This will verify that your environment is set up correctly.
+          Test the blog generation system without having to wait for the cron
+          job to run. This will verify that your environment is set up
+          correctly.
         </p>
         <button
           onClick={testCronEndpoint}
