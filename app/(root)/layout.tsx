@@ -2,7 +2,8 @@ import React from "react";
 
 const metadata = {
   title: "Scam Protector - Detect Online Scams",
-  description: "Using advanced technology to help you avoid online scams and phishing attacks"
+  description:
+    "Using advanced technology to help you avoid online scams and phishing attacks",
 };
 
 export default function RootLayout({

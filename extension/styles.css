@@ -1,0 +1,26 @@
+.sp-danger {
+  outline: 2px solid #ff3333 !important;
+  outline-offset: 2px !important;
+  position: relative;
+}
+
+.sp-danger::before {
+  content: "⚠️ Potential scam: low trust score";
+  position: absolute;
+  top: -30px;
+  left: 0;
+  background-color: #ff3333;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  z-index: 10000;
+}
+
+.sp-danger:hover::before {
+  opacity: 1;
+}

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useReportWebVitals } from 'next/web-vitals';
-import { sendWebVitals } from '@/lib/web-vitals';
+import { useReportWebVitals } from "next/web-vitals";
+import { sendWebVitals } from "@/lib/web-vitals";
 
 export function WebVitals() {
   useReportWebVitals(sendWebVitals);

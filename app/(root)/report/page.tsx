@@ -6,19 +6,31 @@ import { JsonLd } from "react-schemaorg";
 
 export const metadata: Metadata = {
   title: "Report a Scam | Scam Protector",
-  description: "Help protect others by reporting scams, suspicious websites, or fraudulent activities. Your report helps improve our scam detection systems.",
-  keywords: ["report scam", "report fraud", "report phishing", "suspicious website", "report online scam", "fraud reporting"],
+  description:
+    "Help protect others by reporting scams, suspicious websites, or fraudulent activities. Your report helps improve our scam detection systems.",
+  keywords: [
+    "report scam",
+    "report fraud",
+    "report phishing",
+    "suspicious website",
+    "report online scam",
+    "fraud reporting",
+  ],
   alternates: {
     canonical: "/report",
   },
   openGraph: {
     title: "Report Online Scams and Fraud | Scam Protector",
-    description: "Report suspicious websites and scams to help protect the community. Your reports help us identify new threats and improve our detection systems.",
+    description:
+      "Report suspicious websites and scams to help protect the community. Your reports help us identify new threats and improve our detection systems.",
     url: "/report",
     type: "website",
     images: [
       {
-        url: new URL('/api/og?title=Report a Scam&description=Help protect others by reporting suspicious websites&type=scan', process.env.NEXT_PUBLIC_BASE_URL || 'https://scam-protector.com').toString(),
+        url: new URL(
+          "/api/og?title=Report a Scam&description=Help protect others by reporting suspicious websites&type=scan",
+          process.env.NEXT_PUBLIC_BASE_URL || "https://scam-protector.com"
+        ).toString(),
         width: 1200,
         height: 630,
         alt: "Scam Protector Report Form",
@@ -28,8 +40,14 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Report Online Scams and Fraud",
-    description: "Help protect others by reporting online scams. Your reports help us identify new threats and improve our detection systems.",
-    images: [new URL('/api/og?title=Report a Scam&description=Help protect others by reporting suspicious websites&type=scan', process.env.NEXT_PUBLIC_BASE_URL || 'https://scam-protector.com').toString()],
+    description:
+      "Help protect others by reporting online scams. Your reports help us identify new threats and improve our detection systems.",
+    images: [
+      new URL(
+        "/api/og?title=Report a Scam&description=Help protect others by reporting suspicious websites&type=scan",
+        process.env.NEXT_PUBLIC_BASE_URL || "https://scam-protector.com"
+      ).toString(),
+    ],
   },
 };
 
@@ -41,13 +59,15 @@ const ReportPage = () => {
         item={{
           "@context": "https://schema.org",
           "@type": "WebPage",
-          "name": "Report a Scam",
-          "description": "Report suspicious websites, potential scams, and fraudulent activities to help protect others online.",
-          "mainEntity": {
+          name: "Report a Scam",
+          description:
+            "Report suspicious websites, potential scams, and fraudulent activities to help protect others online.",
+          mainEntity: {
             "@type": "ContactPage",
-            "name": "Scam Report Form",
-            "description": "Form to report suspicious websites and scam activities to Scam Protector.",
-          }
+            name: "Scam Report Form",
+            description:
+              "Form to report suspicious websites and scam activities to Scam Protector.",
+          },
         }}
       />
 
@@ -78,7 +98,8 @@ const ReportPage = () => {
             </h2>
             <div className="space-y-4">
               <p className="text-gray-700">
-                When you report a scam, our AI systems analyze the information to:
+                When you report a scam, our AI systems analyze the information
+                to:
               </p>
               <ul className="list-disc pl-5 space-y-2 text-gray-600">
                 <li>Add suspicious domains to our detection database</li>
@@ -89,8 +110,8 @@ const ReportPage = () => {
                 </li>
               </ul>
               <p className="text-gray-700">
-                Your report is confidential and helps make the internet safer for
-                everyone.
+                Your report is confidential and helps make the internet safer
+                for everyone.
               </p>
             </div>
           </div>
@@ -103,8 +124,8 @@ const ReportPage = () => {
           {/* Additional information */}
           <div className="text-center text-gray-500 text-sm">
             <p>
-              For immediate assistance with active fraud, please also contact your
-              financial institution or local authorities.
+              For immediate assistance with active fraud, please also contact
+              your financial institution or local authorities.
             </p>
           </div>
         </div>

@@ -1,21 +1,29 @@
-import { CLSMetric, FCPMetric, FIDMetric, LCPMetric, TTFBMetric } from 'web-vitals';
+import {
+  CLSMetric,
+  FCPMetric,
+  FIDMetric,
+  LCPMetric,
+  TTFBMetric,
+} from "web-vitals";
 
-const vitalsUrl = 'https://vitals.vercel-analytics.com/v1/vitals';
+const vitalsUrl = "https://vitals.vercel-analytics.com/v1/vitals";
 
 function getConnectionSpeed() {
-  return 'connection' in navigator &&
-    navigator['connection'] &&
-    'effectiveType' in navigator['connection']
-    ? navigator['connection']['effectiveType']
-    : '';
+  return "connection" in navigator &&
+    navigator["connection"] &&
+    "effectiveType" in navigator["connection"]
+    ? navigator["connection"]["effectiveType"]
+    : "";
 }
 
 /**
  * Sends web vitals metrics to a specified analytics endpoint
  */
-export function sendWebVitals(metric: CLSMetric | FCPMetric | FIDMetric | LCPMetric | TTFBMetric) {
+export function sendWebVitals(
+  metric: CLSMetric | FCPMetric | FIDMetric | LCPMetric | TTFBMetric
+) {
   const analyticsId = process.env.NEXT_PUBLIC_ANALYTICS_ID;
-  
+
   if (!analyticsId) {
     return;
   }
@@ -33,16 +41,16 @@ export function sendWebVitals(metric: CLSMetric | FCPMetric | FIDMetric | LCPMet
 
   // Use `navigator.sendBeacon()` if available
   const blob = new Blob([JSON.stringify(body)], {
-    type: 'application/json',
+    type: "application/json",
   });
-  
+
   if (navigator.sendBeacon) {
     navigator.sendBeacon(vitalsUrl, blob);
   } else {
     fetch(vitalsUrl, {
       body: JSON.stringify(body),
-      method: 'POST',
-      credentials: 'omit',
+      method: "POST",
+      credentials: "omit",
       keepalive: true,
     });
   }

@@ -13,7 +13,7 @@ import {
   Search,
   Shield,
   User,
-  X
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -75,7 +75,6 @@ const Header = () => {
                   {user.email}
                 </div>
               </div>
-             
 
               {/* Admin Panel Link - Show once we definitely know user is admin */}
               {isAdmin && (

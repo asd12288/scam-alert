@@ -32,18 +32,19 @@ const Page = () => {
         item={{
           "@context": "https://schema.org",
           "@type": "WebApplication",
-          "name": "Scam Protector",
-          "applicationCategory": "SecurityApplication",
-          "operatingSystem": "All",
-          "offers": {
+          name: "Scam Protector",
+          applicationCategory: "SecurityApplication",
+          operatingSystem: "All",
+          offers: {
             "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "USD"
+            price: "0",
+            priceCurrency: "USD",
           },
-          "description": "Advanced tool to detect online scams, phishing attempts, and fraudulent websites in real-time.",
+          description:
+            "Advanced tool to detect online scams, phishing attempts, and fraudulent websites in real-time.",
         }}
       />
-      
+
       <main
         className={`${
           hasResults ? "min-h-screen" : "h-screen"

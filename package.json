@@ -6,7 +6,11 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:ext": "esbuild extension/content.ts --bundle --minify --outfile=public/extension/content.js && esbuild extension/background.ts --bundle --minify --outfile=public/extension/background.js && npm run copy:ext",
+    "copy:ext": "node scripts/copy-extension-assets.js",
+    "build:all": "npm run build && npm run build:ext",
+    "package:ext": "npm run build:ext && node scripts/package-extension.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -50,7 +54,9 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "archiver": "^7.0.1",
     "critters": "^0.0.23",
+    "esbuild": "^0.17.19",
     "eslint": "^9",
     "eslint-config-next": "15.3.0",
     "tailwindcss": "^4",
