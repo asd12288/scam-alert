@@ -1,335 +1,363 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Scam-Protector Extension Debugging</title>
     <style>
-        :root {
-            --primary-color: #0066cc;
-            --danger-color: #ff3333;
-            --success-color: #00a651;
-            --warning-color: #f5a623;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        h1, h2, h3 {
-            color: #333;
-        }
-        .debug-panel {
-            margin-bottom: 20px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-        .control-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .test-links {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        .link-card {
-            border: 1px solid #eee;
-            border-radius: 5px;
-            padding: 15px;
-            background-color: white;
-            position: relative;
-        }
-        button {
-            padding: 8px 16px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        button:hover {
-            opacity: 0.9;
-        }
-        button.warning {
-            background-color: var(--warning-color);
-        }
-        button.danger {
-            background-color: var(--danger-color);
-        }
-        input[type="text"] {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            width: 250px;
-            font-size: 16px;
-        }
-        .result-box {
-            margin-top: 20px;
-            padding: 15px;
-            border-left: 4px solid #ccc;
-            background-color: #f0f0f0;
-            font-family: monospace;
-            white-space: pre-wrap;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .status-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 5px;
-        }
-        .status-active {
-            background-color: var(--success-color);
-        }
-        .status-inactive {
-            background-color: var(--danger-color);
-        }
-        .score-display {
-            margin-left: auto;
-            font-weight: bold;
-        }
-        .score-high {
-            color: var(--success-color);
-        }
-        .score-medium {
-            color: var(--warning-color);
-        }
-        .score-low {
-            color: var(--danger-color);
-        }
-        .flex-space {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .info-box {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            background-color: #e9f7fe;
-            border-left: 4px solid var(--primary-color);
-        }
-        .log-entry {
-            margin-bottom: 5px;
-            padding: 5px;
-            border-bottom: 1px solid #eee;
-        }
-        .log-entry-time {
-            color: #777;
-            font-size: 0.9em;
-            margin-right: 10px;
-        }
-        .tabs {
-            display: flex;
-            margin-bottom: 20px;
-        }
-        .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            border: 1px solid #ddd;
-            border-radius: 5px 5px 0 0;
-            background-color: #f0f0f0;
-            margin-right: 5px;
-        }
-        .tab.active {
-            background-color: white;
-            border-bottom: 1px solid white;
-        }
-        .tab-content {
-            display: none;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 0 5px 5px 5px;
-            margin-top: -1px;
-        }
-        .tab-content.active {
-            display: block;
-        }
+      :root {
+        --primary-color: #0066cc;
+        --danger-color: #ff3333;
+        --success-color: #00a651;
+        --warning-color: #f5a623;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      h1,
+      h2,
+      h3 {
+        color: #333;
+      }
+      .debug-panel {
+        margin-bottom: 20px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+      }
+      .control-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      .test-links {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+      }
+      .link-card {
+        border: 1px solid #eee;
+        border-radius: 5px;
+        padding: 15px;
+        background-color: white;
+        position: relative;
+      }
+      button {
+        padding: 8px 16px;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      button:hover {
+        opacity: 0.9;
+      }
+      button.warning {
+        background-color: var(--warning-color);
+      }
+      button.danger {
+        background-color: var(--danger-color);
+      }
+      input[type="text"] {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: 250px;
+        font-size: 16px;
+      }
+      .result-box {
+        margin-top: 20px;
+        padding: 15px;
+        border-left: 4px solid #ccc;
+        background-color: #f0f0f0;
+        font-family: monospace;
+        white-space: pre-wrap;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+      .status-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 5px;
+      }
+      .status-active {
+        background-color: var(--success-color);
+      }
+      .status-inactive {
+        background-color: var(--danger-color);
+      }
+      .score-display {
+        margin-left: auto;
+        font-weight: bold;
+      }
+      .score-high {
+        color: var(--success-color);
+      }
+      .score-medium {
+        color: var(--warning-color);
+      }
+      .score-low {
+        color: var(--danger-color);
+      }
+      .flex-space {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .info-box {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 5px;
+        background-color: #e9f7fe;
+        border-left: 4px solid var(--primary-color);
+      }
+      .log-entry {
+        margin-bottom: 5px;
+        padding: 5px;
+        border-bottom: 1px solid #eee;
+      }
+      .log-entry-time {
+        color: #777;
+        font-size: 0.9em;
+        margin-right: 10px;
+      }
+      .tabs {
+        display: flex;
+        margin-bottom: 20px;
+      }
+      .tab {
+        padding: 10px 20px;
+        cursor: pointer;
+        border: 1px solid #ddd;
+        border-radius: 5px 5px 0 0;
+        background-color: #f0f0f0;
+        margin-right: 5px;
+      }
+      .tab.active {
+        background-color: white;
+        border-bottom: 1px solid white;
+      }
+      .tab-content {
+        display: none;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 0 5px 5px 5px;
+        margin-top: -1px;
+      }
+      .tab-content.active {
+        display: block;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Scam-Protector Extension Debugging Tool</h1>
-    
-    <div class="debug-panel">
-        <h2>Extension Status</h2>
-        <div class="flex-space">
-            <div>
-                <span class="status-indicator" id="extension-status"></span>
-                <span id="status-text">Checking extension status...</span>
-            </div>
-            <button id="refresh-status">Refresh Status</button>
-        </div>
 
-        <div class="info-box">
-            <p>This tool helps verify if your Scam-Protector extension is working correctly and using the new scanning system.</p>
-            <p><strong>How to use:</strong></p>
-            <ol>
-                <li>Make sure the extension is installed and active</li>
-                <li>Click "Clear Extension Cache" to remove any stored scores</li>
-                <li>Test with predefined links below or add custom domains</li>
-                <li>Compare scores between the extension and web app</li>
-            </ol>
+    <div class="debug-panel">
+      <h2>Extension Status</h2>
+      <div class="flex-space">
+        <div>
+          <span class="status-indicator" id="extension-status"></span>
+          <span id="status-text">Checking extension status...</span>
         </div>
+        <button id="refresh-status">Refresh Status</button>
+      </div>
+
+      <div class="info-box">
+        <p>
+          This tool helps verify if your Scam-Protector extension is working
+          correctly and using the new scanning system.
+        </p>
+        <p><strong>How to use:</strong></p>
+        <ol>
+          <li>Make sure the extension is installed and active</li>
+          <li>Click "Clear Extension Cache" to remove any stored scores</li>
+          <li>Test with predefined links below or add custom domains</li>
+          <li>Compare scores between the extension and web app</li>
+        </ol>
+      </div>
     </div>
 
     <div class="tabs">
-        <div class="tab active" data-tab="test-links">Test Links</div>
-        <div class="tab" data-tab="custom-test">Custom Test</div>
-        <div class="tab" data-tab="api-test">Direct API Test</div>
-        <div class="tab" data-tab="debug-logs">Debug Logs</div>
+      <div class="tab active" data-tab="test-links">Test Links</div>
+      <div class="tab" data-tab="custom-test">Custom Test</div>
+      <div class="tab" data-tab="api-test">Direct API Test</div>
+      <div class="tab" data-tab="debug-logs">Debug Logs</div>
     </div>
 
     <div id="test-links" class="tab-content active">
-        <div class="control-group">
-            <button id="clear-cache" class="warning">Clear Extension Cache</button>
-            <button id="scan-all">Scan All Test Links</button>
-        </div>
+      <div class="control-group">
+        <button id="clear-cache" class="warning">Clear Extension Cache</button>
+        <button id="scan-all">Scan All Test Links</button>
+      </div>
 
-        <h3>Test with these links:</h3>
-        <div class="test-links" id="predefined-links">
-            <!-- Predefined links will be populated by JavaScript -->
-        </div>
+      <h3>Test with these links:</h3>
+      <div class="test-links" id="predefined-links">
+        <!-- Predefined links will be populated by JavaScript -->
+      </div>
     </div>
 
     <div id="custom-test" class="tab-content">
-        <h3>Test Custom Domain</h3>
-        <div class="control-group">
-            <input type="text" id="custom-domain" placeholder="Enter domain (e.g. example.com)">
-            <button id="add-custom-domain">Add Test Link</button>
-        </div>
-        <div class="test-links" id="custom-links">
-            <!-- Custom links will appear here -->
-        </div>
+      <h3>Test Custom Domain</h3>
+      <div class="control-group">
+        <input
+          type="text"
+          id="custom-domain"
+          placeholder="Enter domain (e.g. example.com)"
+        />
+        <button id="add-custom-domain">Add Test Link</button>
+      </div>
+      <div class="test-links" id="custom-links">
+        <!-- Custom links will appear here -->
+      </div>
     </div>
 
     <div id="api-test" class="tab-content">
-        <h3>Test Domain Against Different API Endpoints</h3>
-        <div class="control-group">
-            <input type="text" id="api-test-domain" placeholder="Enter domain (e.g. example.com)">
-            <button id="test-api">Test API Endpoints</button>
-        </div>
-        
-        <div id="api-results" class="result-box">
-            <!-- API test results will appear here -->
-        </div>
+      <h3>Test Domain Against Different API Endpoints</h3>
+      <div class="control-group">
+        <input
+          type="text"
+          id="api-test-domain"
+          placeholder="Enter domain (e.g. example.com)"
+        />
+        <button id="test-api">Test API Endpoints</button>
+      </div>
+
+      <div id="api-results" class="result-box">
+        <!-- API test results will appear here -->
+      </div>
     </div>
 
     <div id="debug-logs" class="tab-content">
-        <h3>Extension Debug Logs</h3>
-        <div class="control-group">
-            <button id="clear-logs">Clear Logs</button>
-        </div>
-        
-        <div id="log-container" class="result-box">
-            <!-- Debug logs will appear here -->
-        </div>
+      <h3>Extension Debug Logs</h3>
+      <div class="control-group">
+        <button id="clear-logs">Clear Logs</button>
+      </div>
+
+      <div id="log-container" class="result-box">
+        <!-- Debug logs will appear here -->
+      </div>
     </div>
 
     <script>
-        // Test domains with different expected safety profiles
-        const testDomains = [
-            { domain: 'google.com', expectedSafe: true },
-            { domain: 'microsoft.com', expectedSafe: true },
-            { domain: 'amazon.com', expectedSafe: true },
-            { domain: 'scam-site-example.com', expectedSafe: false },
-            { domain: 'phishing-example.net', expectedSafe: false },
-            { domain: 'facebook.com', expectedSafe: true }
-        ];
+      // Test domains with different expected safety profiles
+      const testDomains = [
+        { domain: "google.com", expectedSafe: true },
+        { domain: "microsoft.com", expectedSafe: true },
+        { domain: "amazon.com", expectedSafe: true },
+        { domain: "scam-site-example.com", expectedSafe: false },
+        { domain: "phishing-example.net", expectedSafe: false },
+        { domain: "facebook.com", expectedSafe: true },
+      ];
 
-        // Main API endpoints to test
-        const apiEndpoints = [
-            { name: 'domain-security', url: '/api/domain-security' },
-            { name: 'bulk-score', url: '/api/bulk-score' },
-            { name: 'check-domain', url: '/api/check-domain' },
-            { name: 'domain-analysis/analyze', url: '/api/domain-analysis/analyze' }
-        ];
+      // Main API endpoints to test
+      const apiEndpoints = [
+        { name: "domain-security", url: "/api/domain-security" },
+        { name: "bulk-score", url: "/api/bulk-score" },
+        { name: "check-domain", url: "/api/check-domain" },
+        {
+          name: "domain-analysis/analyze",
+          url: "/api/domain-analysis/analyze",
+        },
+      ];
 
-        // Store logs
-        const debugLogs = [];
+      // Store logs
+      const debugLogs = [];
 
-        // Helper to log debug information
-        function logDebug(message, data = null) {
-            const timestamp = new Date().toISOString();
-            const logEntry = {
-                time: timestamp,
-                message,
-                data
-            };
-            debugLogs.unshift(logEntry);
-            updateLogDisplay();
-            
-            // Also log to console for easier debugging
-            console.log(`[Debug] ${message}`, data);
-        }
+      // Helper to log debug information
+      function logDebug(message, data = null) {
+        const timestamp = new Date().toISOString();
+        const logEntry = {
+          time: timestamp,
+          message,
+          data,
+        };
+        debugLogs.unshift(logEntry);
+        updateLogDisplay();
 
-        // Update logs in UI
-        function updateLogDisplay() {
-            const logContainer = document.getElementById('log-container');
-            logContainer.innerHTML = debugLogs.map(entry => `
+        // Also log to console for easier debugging
+        console.log(`[Debug] ${message}`, data);
+      }
+
+      // Update logs in UI
+      function updateLogDisplay() {
+        const logContainer = document.getElementById("log-container");
+        logContainer.innerHTML = debugLogs
+          .map(
+            (entry) => `
                 <div class="log-entry">
-                    <span class="log-entry-time">${new Date(entry.time).toLocaleTimeString()}</span>
+                    <span class="log-entry-time">${new Date(
+                      entry.time
+                    ).toLocaleTimeString()}</span>
                     <span>${entry.message}</span>
-                    ${entry.data ? `<pre>${JSON.stringify(entry.data, null, 2)}</pre>` : ''}
+                    ${
+                      entry.data
+                        ? `<pre>${JSON.stringify(entry.data, null, 2)}</pre>`
+                        : ""
+                    }
                 </div>
-            `).join('');
-        }
+            `
+          )
+          .join("");
+      }
 
-        // Check if extension is active by looking for marking class
-        function checkExtensionStatus() {
-            const statusIndicator = document.getElementById('extension-status');
-            const statusText = document.getElementById('status-text');
+      // Check if extension is active by looking for marking class
+      function checkExtensionStatus() {
+        const statusIndicator = document.getElementById("extension-status");
+        const statusText = document.getElementById("status-text");
 
-            // Add a test link that should be marked
-            const testLink = document.createElement('a');
-            testLink.href = 'https://phishing-example.net';
-            testLink.style.display = 'none';
-            testLink.id = 'extension-test-link';
-            document.body.appendChild(testLink);
-            
-            // Check for the sp-danger class after a delay
-            setTimeout(() => {
-                const link = document.getElementById('extension-test-link');
-                if (link.classList.contains('sp-danger')) {
-                    statusIndicator.className = 'status-indicator status-active';
-                    statusText.textContent = 'Extension is active and working!';
-                    logDebug('Extension is active and marking links');
-                } else {
-                    statusIndicator.className = 'status-indicator status-inactive';
-                    statusText.textContent = 'Extension does not appear to be active';
-                    logDebug('Extension is not marking test link', { linkClasses: link.className });
-                }
-                
-                // Remove the test link
-                document.body.removeChild(testLink);
-            }, 2000);
-        }
+        // Add a test link that should be marked
+        const testLink = document.createElement("a");
+        testLink.href = "https://phishing-example.net";
+        testLink.style.display = "none";
+        testLink.id = "extension-test-link";
+        document.body.appendChild(testLink);
 
-        // Format score with color coding
-        function formatScore(score) {
-            let colorClass = 'score-medium';
-            if (score >= 70) colorClass = 'score-high';
-            if (score < 50) colorClass = 'score-low';
-            
-            return `<span class="score-display ${colorClass}">${score}</span>`;
-        }
+        // Check for the sp-danger class after a delay
+        setTimeout(() => {
+          const link = document.getElementById("extension-test-link");
+          if (link.classList.contains("sp-danger")) {
+            statusIndicator.className = "status-indicator status-active";
+            statusText.textContent = "Extension is active and working!";
+            logDebug("Extension is active and marking links");
+          } else {
+            statusIndicator.className = "status-indicator status-inactive";
+            statusText.textContent = "Extension does not appear to be active";
+            logDebug("Extension is not marking test link", {
+              linkClasses: link.className,
+            });
+          }
 
-        // Create test link card
-        function createLinkCard(domain, container) {
-            const card = document.createElement('div');
-            card.className = 'link-card';
-            card.innerHTML = `
+          // Remove the test link
+          document.body.removeChild(testLink);
+        }, 2000);
+      }
+
+      // Format score with color coding
+      function formatScore(score) {
+        let colorClass = "score-medium";
+        if (score >= 70) colorClass = "score-high";
+        if (score < 50) colorClass = "score-low";
+
+        return `<span class="score-display ${colorClass}">${score}</span>`;
+      }
+
+      // Create test link card
+      function createLinkCard(domain, container) {
+        const card = document.createElement("div");
+        card.className = "link-card";
+        card.innerHTML = `
                 <div class="flex-space">
                     <h4>${domain}</h4>
                     <div class="score-display" data-domain="${domain}">-</div>
@@ -340,274 +368,305 @@
                 <button class="check-domain" data-domain="${domain}">Check in Extension</button>
                 <button class="check-webapp" data-domain="${domain}">Check in Web App</button>
             `;
-            container.appendChild(card);
-            
-            // Add event listeners
-            card.querySelector('.check-domain').addEventListener('click', () => {
-                testDomainInExtension(domain);
-            });
-            
-            card.querySelector('.check-webapp').addEventListener('click', () => {
-                testDomainInWebApp(domain);
-            });
-        }
+        container.appendChild(card);
 
-        // Test a domain in the extension
-        function testDomainInExtension(domain) {
-            logDebug(`Testing domain in extension: ${domain}`);
-            
-            // Create a temporary link
-            const tempLink = document.createElement('a');
-            tempLink.href = `https://${domain}`;
-            tempLink.style.display = 'none';
-            tempLink.id = `temp-link-${domain.replace(/\./g, '-')}`;
-            tempLink.className = 'temp-test-link';
-            document.body.appendChild(tempLink);
-            
-            // Clear any existing scores
-            document.querySelector(`[data-domain="${domain}"].score-display`).innerHTML = 'Checking...';
-            
-            // Wait for extension to process
-            setTimeout(() => {
-                const link = document.getElementById(`temp-link-${domain.replace(/\./g, '-')}`);
-                const scoreDisplay = document.querySelector(`[data-domain="${domain}"].score-display`);
-                
-                if (link.classList.contains('sp-danger')) {
-                    // Try to extract exact score from debug attribute if available
-                    let score = '< 60';  // Default if we can't get exact score
-                    
-                    if (link.hasAttribute('data-sp-score')) {
-                        score = link.getAttribute('data-sp-score');
-                    } else if (link.hasAttribute('data-sp-warning')) {
-                        const warning = link.getAttribute('data-sp-warning');
-                        logDebug(`Warning message: ${warning}`);
-                    }
-                    
-                    scoreDisplay.innerHTML = formatScore(score);
-                    logDebug(`Domain ${domain} marked as dangerous`, { element: link.outerHTML });
-                } else {
-                    scoreDisplay.innerHTML = formatScore('≥ 60');
-                    logDebug(`Domain ${domain} marked as safe`);
-                }
-                
-                // Remove temp link
-                document.body.removeChild(link);
-            }, 2000);
-        }
-
-        // Test a domain in the web app by calling the API directly
-        async function testDomainInWebApp(domain) {
-            logDebug(`Testing domain in web app: ${domain}`);
-            
-            try {
-                // Get the score display element
-                const scoreDisplay = document.querySelector(`[data-domain="${domain}"].score-display`);
-                scoreDisplay.innerHTML = 'Checking...';
-                
-                // Call domain-security API (same as web app)
-                const response = await fetch('/api/domain-security', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ domain })
-                });
-                
-                const data = await response.json();
-                logDebug(`Web app API response for ${domain}`, data);
-                
-                // Update display
-                if (data && data.score !== undefined) {
-                    scoreDisplay.innerHTML = formatScore(data.score);
-                } else {
-                    scoreDisplay.innerHTML = 'Error';
-                }
-            } catch (error) {
-                logDebug(`Error testing domain ${domain} in web app:`, error);
-                document.querySelector(`[data-domain="${domain}"].score-display`).innerHTML = 'Error';
-            }
-        }
-
-        // Test API endpoints to compare their responses
-        async function testApiEndpoints(domain) {
-            logDebug(`Testing all API endpoints for domain: ${domain}`);
-            const resultsContainer = document.getElementById('api-results');
-            resultsContainer.textContent = `Testing API endpoints for ${domain}...`;
-            
-            const results = {};
-            
-            try {
-                for (const endpoint of apiEndpoints) {
-                    try {
-                        // Special case for bulk-score which needs an array
-                        const body = endpoint.name === 'bulk-score' 
-                            ? JSON.stringify({ hosts: [domain] })
-                            : JSON.stringify({ domain });
-                        
-                        const response = await fetch(endpoint.url, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body
-                        });
-                        
-                        const data = await response.json();
-                        
-                        // Extract score based on endpoint format
-                        let score;
-                        if (endpoint.name === 'bulk-score') {
-                            score = data[domain];
-                        } else {
-                            score = data.score;
-                        }
-                        
-                        results[endpoint.name] = {
-                            score,
-                            data
-                        };
-                        
-                        logDebug(`API ${endpoint.name} returned score: ${score}`, data);
-                    } catch (error) {
-                        results[endpoint.name] = { error: error.message };
-                        logDebug(`Error with ${endpoint.name} endpoint:`, error);
-                    }
-                }
-                
-                // Format the results for display
-                let output = `Results for ${domain}:\n\n`;
-                
-                for (const endpoint in results) {
-                    const result = results[endpoint];
-                    output += `${endpoint}: `;
-                    
-                    if (result.error) {
-                        output += `ERROR: ${result.error}\n`;
-                    } else {
-                        output += `Score: ${result.score}\n`;
-                    }
-                }
-                
-                resultsContainer.textContent = output;
-            } catch (error) {
-                logDebug('Error testing API endpoints:', error);
-                resultsContainer.textContent = `Error testing API endpoints: ${error.message}`;
-            }
-        }
-
-        // Clear extension cache by using the extension's debug feature
-        function clearExtensionCache() {
-            logDebug('Attempting to clear extension cache');
-            
-            // Create a temp link with debug parameter
-            const tempLink = document.createElement('a');
-            tempLink.href = 'https://example.com?sp-debug=true';
-            tempLink.style.display = 'none';
-            document.body.appendChild(tempLink);
-            
-            // Wait for extension to add debug controls
-            setTimeout(() => {
-                // Find the clear cache button added by the extension
-                const clearButtons = Array.from(document.querySelectorAll('button')).filter(
-                    button => button.textContent.includes('Clear Score Cache')
-                );
-                
-                if (clearButtons.length > 0) {
-                    logDebug('Found extension debug button, clicking it');
-                    clearButtons[0].click();
-                    alert('Extension cache cleared successfully!');
-                } else {
-                    logDebug('Could not find extension debug button');
-                    alert('Could not find extension debug controls. Try adding ?sp-debug=true to the URL manually.');
-                }
-                
-                // Remove the temp link
-                document.body.removeChild(tempLink);
-            }, 2000);
-        }
-
-        // Scan all test links
-        function scanAllLinks() {
-            const links = document.querySelectorAll('#predefined-links .check-domain');
-            links.forEach(button => {
-                setTimeout(() => {
-                    button.click();
-                }, 500);
-            });
-        }
-
-        // Tab switching functionality
-        function setupTabs() {
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    // Hide all tab contents
-                    document.querySelectorAll('.tab-content').forEach(content => {
-                        content.classList.remove('active');
-                    });
-                    
-                    // Deactivate all tabs
-                    tabs.forEach(t => {
-                        t.classList.remove('active');
-                    });
-                    
-                    // Activate clicked tab
-                    tab.classList.add('active');
-                    
-                    // Show corresponding content
-                    const contentId = tab.getAttribute('data-tab');
-                    document.getElementById(contentId).classList.add('active');
-                });
-            });
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            // Set up tabs
-            setupTabs();
-            
-            // Check extension status
-            checkExtensionStatus();
-            
-            // Add test domains
-            const linksContainer = document.getElementById('predefined-links');
-            testDomains.forEach(item => {
-                createLinkCard(item.domain, linksContainer);
-            });
-            
-            // Set up event listeners
-            document.getElementById('refresh-status').addEventListener('click', checkExtensionStatus);
-            document.getElementById('clear-cache').addEventListener('click', clearExtensionCache);
-            document.getElementById('scan-all').addEventListener('click', scanAllLinks);
-            document.getElementById('clear-logs').addEventListener('click', () => {
-                debugLogs.length = 0;
-                updateLogDisplay();
-            });
-            
-            // Custom domain
-            document.getElementById('add-custom-domain').addEventListener('click', () => {
-                const domain = document.getElementById('custom-domain').value.trim();
-                if (domain) {
-                    createLinkCard(domain, document.getElementById('custom-links'));
-                    document.getElementById('custom-domain').value = '';
-                }
-            });
-            
-            // API test
-            document.getElementById('test-api').addEventListener('click', () => {
-                const domain = document.getElementById('api-test-domain').value.trim();
-                if (domain) {
-                    testApiEndpoints(domain);
-                }
-            });
-            
-            // Log initial page load
-            logDebug('Debug page loaded', { url: window.location.href });
-            
-            // Add sp-debug parameter to URL if not present
-            if (!window.location.search.includes('sp-debug')) {
-                logDebug('Adding sp-debug parameter to URL');
-                const url = new URL(window.location.href);
-                url.searchParams.set('sp-debug', 'true');
-                window.history.replaceState({}, '', url.toString());
-            }
+        // Add event listeners
+        card.querySelector(".check-domain").addEventListener("click", () => {
+          testDomainInExtension(domain);
         });
+
+        card.querySelector(".check-webapp").addEventListener("click", () => {
+          testDomainInWebApp(domain);
+        });
+      }
+
+      // Test a domain in the extension
+      function testDomainInExtension(domain) {
+        logDebug(`Testing domain in extension: ${domain}`);
+
+        // Create a temporary link
+        const tempLink = document.createElement("a");
+        tempLink.href = `https://${domain}`;
+        tempLink.style.display = "none";
+        tempLink.id = `temp-link-${domain.replace(/\./g, "-")}`;
+        tempLink.className = "temp-test-link";
+        document.body.appendChild(tempLink);
+
+        // Clear any existing scores
+        document.querySelector(
+          `[data-domain="${domain}"].score-display`
+        ).innerHTML = "Checking...";
+
+        // Wait for extension to process
+        setTimeout(() => {
+          const link = document.getElementById(
+            `temp-link-${domain.replace(/\./g, "-")}`
+          );
+          const scoreDisplay = document.querySelector(
+            `[data-domain="${domain}"].score-display`
+          );
+
+          if (link.classList.contains("sp-danger")) {
+            // Try to extract exact score from debug attribute if available
+            let score = "< 60"; // Default if we can't get exact score
+
+            if (link.hasAttribute("data-sp-score")) {
+              score = link.getAttribute("data-sp-score");
+            } else if (link.hasAttribute("data-sp-warning")) {
+              const warning = link.getAttribute("data-sp-warning");
+              logDebug(`Warning message: ${warning}`);
+            }
+
+            scoreDisplay.innerHTML = formatScore(score);
+            logDebug(`Domain ${domain} marked as dangerous`, {
+              element: link.outerHTML,
+            });
+          } else {
+            scoreDisplay.innerHTML = formatScore("≥ 60");
+            logDebug(`Domain ${domain} marked as safe`);
+          }
+
+          // Remove temp link
+          document.body.removeChild(link);
+        }, 2000);
+      }
+
+      // Test a domain in the web app by calling the API directly
+      async function testDomainInWebApp(domain) {
+        logDebug(`Testing domain in web app: ${domain}`);
+
+        try {
+          // Get the score display element
+          const scoreDisplay = document.querySelector(
+            `[data-domain="${domain}"].score-display`
+          );
+          scoreDisplay.innerHTML = "Checking...";
+
+          // Call domain-security API (same as web app)
+          const response = await fetch("/api/domain-security", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ domain }),
+          });
+
+          const data = await response.json();
+          logDebug(`Web app API response for ${domain}`, data);
+
+          // Update display
+          if (data && data.score !== undefined) {
+            scoreDisplay.innerHTML = formatScore(data.score);
+          } else {
+            scoreDisplay.innerHTML = "Error";
+          }
+        } catch (error) {
+          logDebug(`Error testing domain ${domain} in web app:`, error);
+          document.querySelector(
+            `[data-domain="${domain}"].score-display`
+          ).innerHTML = "Error";
+        }
+      }
+
+      // Test API endpoints to compare their responses
+      async function testApiEndpoints(domain) {
+        logDebug(`Testing all API endpoints for domain: ${domain}`);
+        const resultsContainer = document.getElementById("api-results");
+        resultsContainer.textContent = `Testing API endpoints for ${domain}...`;
+
+        const results = {};
+
+        try {
+          for (const endpoint of apiEndpoints) {
+            try {
+              // Special case for bulk-score which needs an array
+              const body =
+                endpoint.name === "bulk-score"
+                  ? JSON.stringify({ hosts: [domain] })
+                  : JSON.stringify({ domain });
+
+              const response = await fetch(endpoint.url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body,
+              });
+
+              const data = await response.json();
+
+              // Extract score based on endpoint format
+              let score;
+              if (endpoint.name === "bulk-score") {
+                score = data[domain];
+              } else {
+                score = data.score;
+              }
+
+              results[endpoint.name] = {
+                score,
+                data,
+              };
+
+              logDebug(`API ${endpoint.name} returned score: ${score}`, data);
+            } catch (error) {
+              results[endpoint.name] = { error: error.message };
+              logDebug(`Error with ${endpoint.name} endpoint:`, error);
+            }
+          }
+
+          // Format the results for display
+          let output = `Results for ${domain}:\n\n`;
+
+          for (const endpoint in results) {
+            const result = results[endpoint];
+            output += `${endpoint}: `;
+
+            if (result.error) {
+              output += `ERROR: ${result.error}\n`;
+            } else {
+              output += `Score: ${result.score}\n`;
+            }
+          }
+
+          resultsContainer.textContent = output;
+        } catch (error) {
+          logDebug("Error testing API endpoints:", error);
+          resultsContainer.textContent = `Error testing API endpoints: ${error.message}`;
+        }
+      }
+
+      // Clear extension cache by using the extension's debug feature
+      function clearExtensionCache() {
+        logDebug("Attempting to clear extension cache");
+
+        // Create a temp link with debug parameter
+        const tempLink = document.createElement("a");
+        tempLink.href = "https://example.com?sp-debug=true";
+        tempLink.style.display = "none";
+        document.body.appendChild(tempLink);
+
+        // Wait for extension to add debug controls
+        setTimeout(() => {
+          // Find the clear cache button added by the extension
+          const clearButtons = Array.from(
+            document.querySelectorAll("button")
+          ).filter((button) =>
+            button.textContent.includes("Clear Score Cache")
+          );
+
+          if (clearButtons.length > 0) {
+            logDebug("Found extension debug button, clicking it");
+            clearButtons[0].click();
+            alert("Extension cache cleared successfully!");
+          } else {
+            logDebug("Could not find extension debug button");
+            alert(
+              "Could not find extension debug controls. Try adding ?sp-debug=true to the URL manually."
+            );
+          }
+
+          // Remove the temp link
+          document.body.removeChild(tempLink);
+        }, 2000);
+      }
+
+      // Scan all test links
+      function scanAllLinks() {
+        const links = document.querySelectorAll(
+          "#predefined-links .check-domain"
+        );
+        links.forEach((button) => {
+          setTimeout(() => {
+            button.click();
+          }, 500);
+        });
+      }
+
+      // Tab switching functionality
+      function setupTabs() {
+        const tabs = document.querySelectorAll(".tab");
+        tabs.forEach((tab) => {
+          tab.addEventListener("click", () => {
+            // Hide all tab contents
+            document.querySelectorAll(".tab-content").forEach((content) => {
+              content.classList.remove("active");
+            });
+
+            // Deactivate all tabs
+            tabs.forEach((t) => {
+              t.classList.remove("active");
+            });
+
+            // Activate clicked tab
+            tab.classList.add("active");
+
+            // Show corresponding content
+            const contentId = tab.getAttribute("data-tab");
+            document.getElementById(contentId).classList.add("active");
+          });
+        });
+      }
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", () => {
+        // Set up tabs
+        setupTabs();
+
+        // Check extension status
+        checkExtensionStatus();
+
+        // Add test domains
+        const linksContainer = document.getElementById("predefined-links");
+        testDomains.forEach((item) => {
+          createLinkCard(item.domain, linksContainer);
+        });
+
+        // Set up event listeners
+        document
+          .getElementById("refresh-status")
+          .addEventListener("click", checkExtensionStatus);
+        document
+          .getElementById("clear-cache")
+          .addEventListener("click", clearExtensionCache);
+        document
+          .getElementById("scan-all")
+          .addEventListener("click", scanAllLinks);
+        document.getElementById("clear-logs").addEventListener("click", () => {
+          debugLogs.length = 0;
+          updateLogDisplay();
+        });
+
+        // Custom domain
+        document
+          .getElementById("add-custom-domain")
+          .addEventListener("click", () => {
+            const domain = document
+              .getElementById("custom-domain")
+              .value.trim();
+            if (domain) {
+              createLinkCard(domain, document.getElementById("custom-links"));
+              document.getElementById("custom-domain").value = "";
+            }
+          });
+
+        // API test
+        document.getElementById("test-api").addEventListener("click", () => {
+          const domain = document
+            .getElementById("api-test-domain")
+            .value.trim();
+          if (domain) {
+            testApiEndpoints(domain);
+          }
+        });
+
+        // Log initial page load
+        logDebug("Debug page loaded", { url: window.location.href });
+
+        // Add sp-debug parameter to URL if not present
+        if (!window.location.search.includes("sp-debug")) {
+          logDebug("Adding sp-debug parameter to URL");
+          const url = new URL(window.location.href);
+          url.searchParams.set("sp-debug", "true");
+          window.history.replaceState({}, "", url.toString());
+        }
+      });
     </script>
-</body>
+  </body>
 </html>

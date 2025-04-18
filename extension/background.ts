@@ -20,7 +20,8 @@ interface ScoreDetails {
 // Store scores in the local storage
 const storeScores = async (scores: HostScoreMap): Promise<void> => {
   const now = Date.now();
-  const storedItems: {[key: string]: {score: number, timestamp: number}} = {};
+  const storedItems: { [key: string]: { score: number; timestamp: number } } =
+    {};
 
   Object.entries(scores).forEach(([host, score]) => {
     storedItems[host] = { score, timestamp: now };
@@ -37,11 +38,13 @@ const getStoredScores = async (hosts: string[]): Promise<HostScoreMap> => {
   const now = Date.now();
   const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
 
-  hosts.forEach(host => {
+  hosts.forEach((host) => {
     const item = result[host];
-    if (item && (now - item.timestamp < CACHE_TTL)) {
+    if (item && now - item.timestamp < CACHE_TTL) {
       validScores[host] = item.score;
-      console.debug(`[Scam-Protector] Using cached score for ${host}: ${item.score}`);
+      console.debug(
+        `[Scam-Protector] Using cached score for ${host}: ${item.score}`
+      );
     }
   });
 
@@ -63,17 +66,19 @@ const fetchScoresFromAPI = async (hosts: string[]): Promise<HostScoreMap> => {
   if (!hosts.length) return {};
 
   try {
-    // Use the app's bulk-score API endpoint 
+    // Use the app's bulk-score API endpoint
     // The updated endpoint will use the same scoring as the web app
-    const API_ENDPOINT = 'https://scam-protector.com/api/bulk-score';
-    
-    console.debug(`[Scam-Protector] Fetching scores for ${hosts.length} hosts from bulk API`);
-    console.debug(`[Scam-Protector] Hosts: ${hosts.join(', ')}`);
-    
+    const API_ENDPOINT = "https://scam-protector.com/api/bulk-score";
+
+    console.debug(
+      `[Scam-Protector] Fetching scores for ${hosts.length} hosts from bulk API`
+    );
+    console.debug(`[Scam-Protector] Hosts: ${hosts.join(", ")}`);
+
     const response = await fetch(API_ENDPOINT, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ hosts }),
     });
@@ -83,19 +88,19 @@ const fetchScoresFromAPI = async (hosts: string[]): Promise<HostScoreMap> => {
     }
 
     const data = await response.json();
-    
+
     // Log returned scores for debugging
-    console.debug('[Scam-Protector] API response scores:', data);
-    
+    console.debug("[Scam-Protector] API response scores:", data);
+
     return data as HostScoreMap;
   } catch (error) {
-    console.error('[Scam-Protector] API error:', error);
-    
+    console.error("[Scam-Protector] API error:", error);
+
     // Fallback: fetch each host individually through the single-domain endpoint
-    console.debug('[Scam-Protector] Falling back to individual domain checks');
-    
+    console.debug("[Scam-Protector] Falling back to individual domain checks");
+
     const scoreMap: HostScoreMap = {};
-    
+
     await Promise.all(
       hosts.map(async (host) => {
         try {
@@ -109,7 +114,7 @@ const fetchScoresFromAPI = async (hosts: string[]): Promise<HostScoreMap> => {
         }
       })
     );
-    
+
     return scoreMap;
   }
 };
@@ -119,14 +124,15 @@ const fetchSingleDomainScore = async (host: string): Promise<number> => {
   try {
     // Use the domain-security endpoint (same as used by the web form)
     // to ensure consistent scoring between extension and web input
-    const CHECK_DOMAIN_ENDPOINT = 'https://scam-protector.com/api/domain-security';
-    
+    const CHECK_DOMAIN_ENDPOINT =
+      "https://scam-protector.com/api/domain-security";
+
     console.debug(`[Scam-Protector] Checking single domain ${host}`);
-    
+
     const response = await fetch(CHECK_DOMAIN_ENDPOINT, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ domain: host }),
     });
@@ -136,7 +142,9 @@ const fetchSingleDomainScore = async (host: string): Promise<number> => {
     }
 
     const data = await response.json();
-    console.debug(`[Scam-Protector] ${host} domain check returned score: ${data.score}`);
+    console.debug(
+      `[Scam-Protector] ${host} domain check returned score: ${data.score}`
+    );
     return data.score;
   } catch (error) {
     console.error(`[Scam-Protector] Error checking domain ${host}:`, error);
@@ -155,9 +163,9 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
 
 // Handle messages from content script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'getScores') {
+  if (message.action === "getScores") {
     const { hosts } = message;
-    
+
     // Process the request in an async function
     (async () => {
       try {
@@ -167,46 +175,55 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           sendResponse({ success: true, message: "Cache cleared" });
           return;
         }
-        
+
         // Check cache first
         const cachedScores = await getStoredScores(hosts);
-        
+
         // Find which hosts are not in cache
-        const missingHosts = hosts.filter(host => cachedScores[host] === undefined);
-        
+        const missingHosts = hosts.filter(
+          (host) => cachedScores[host] === undefined
+        );
+
         if (missingHosts.length === 0) {
           // All scores were in cache
-          console.debug(`[Scam-Protector] All ${hosts.length} hosts found in cache`);
+          console.debug(
+            `[Scam-Protector] All ${hosts.length} hosts found in cache`
+          );
           sendResponse(cachedScores);
           return;
         }
-        
-        console.debug(`[Scam-Protector] Fetching scores for ${missingHosts.length} missing hosts`);
-        
+
+        console.debug(
+          `[Scam-Protector] Fetching scores for ${missingHosts.length} missing hosts`
+        );
+
         // Split into chunks of 10 to avoid hitting API limits
         const hostChunks = chunkArray(missingHosts, 10);
         let fetchedScores: HostScoreMap = {};
-        
+
         // Fetch scores for each chunk
         for (const chunk of hostChunks) {
           const newScores = await fetchScoresFromAPI(chunk);
           fetchedScores = { ...fetchedScores, ...newScores };
         }
-        
+
         // Store the new scores
         await storeScores(fetchedScores);
-        
+
         // Combine cached and fetched scores
         const allScores = { ...cachedScores, ...fetchedScores };
-        
+
         // Send the combined results back to the content script
         sendResponse(allScores);
       } catch (error) {
-        console.error('[Scam-Protector] Error processing score request:', error);
+        console.error(
+          "[Scam-Protector] Error processing score request:",
+          error
+        );
         sendResponse({});
       }
     })();
-    
+
     // Return true to indicate we'll respond asynchronously
     return true;
   }

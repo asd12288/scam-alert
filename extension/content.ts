@@ -14,19 +14,19 @@ const BANNER_THRESHOLD = 40; // Show the safety banner for sites below this scor
 
 // Accessibility settings - can later be made configurable via options page
 const ACCESSIBILITY = {
-  largeText: true,            // Use larger text for warnings
-  highContrast: false,        // Force high contrast mode
-  verboseWarnings: true,      // Use more descriptive warnings
-  animationReduced: false,    // Reduce animations for users who prefer reduced motion
+  largeText: true, // Use larger text for warnings
+  highContrast: false, // Force high contrast mode
+  verboseWarnings: true, // Use more descriptive warnings
+  animationReduced: false, // Reduce animations for users who prefer reduced motion
 };
 
 // Banner settings - these could be made configurable
 const BANNER_SETTINGS = {
-  enabled: true,              // Whether the banner is enabled
-  autoHide: false,            // Auto-hide after a certain time
-  autoHideDelay: 10000,       // Auto-hide delay in ms
-  showOnAllPages: false,      // Show on all pages or just homepage
-  alwaysShowScore: true,      // Always show score in banner
+  enabled: true, // Whether the banner is enabled
+  autoHide: false, // Auto-hide after a certain time
+  autoHideDelay: 10000, // Auto-hide delay in ms
+  showOnAllPages: false, // Show on all pages or just homepage
+  alwaysShowScore: true, // Always show score in banner
 };
 
 // Extract unique hostnames from all links on the page
@@ -72,22 +72,22 @@ function createRiskMeter(score: number): HTMLDivElement {
   const riskPercentage = 100 - score;
 
   // Create the risk meter container
-  const riskMeter = document.createElement('div');
-  riskMeter.className = 'sp-risk-meter';
+  const riskMeter = document.createElement("div");
+  riskMeter.className = "sp-risk-meter";
 
   // Create the fill element that shows the risk level
-  const riskFill = document.createElement('div');
-  riskFill.className = 'sp-risk-meter-fill';
-  riskFill.style.setProperty('--risk-level', `${riskPercentage}%`);
+  const riskFill = document.createElement("div");
+  riskFill.className = "sp-risk-meter-fill";
+  riskFill.style.setProperty("--risk-level", `${riskPercentage}%`);
 
   // Create a marker at the 60% threshold (corresponds to our RISKY_THRESHOLD)
-  const thresholdMarker = document.createElement('div');
-  thresholdMarker.className = 'sp-risk-meter-marker';
-  thresholdMarker.style.left = '40%'; // 100 - RISKY_THRESHOLD
+  const thresholdMarker = document.createElement("div");
+  thresholdMarker.className = "sp-risk-meter-marker";
+  thresholdMarker.style.left = "40%"; // 100 - RISKY_THRESHOLD
 
   // Create a score value indicator
-  const scoreValue = document.createElement('div');
-  scoreValue.className = 'sp-risk-meter-value';
+  const scoreValue = document.createElement("div");
+  scoreValue.className = "sp-risk-meter-value";
   scoreValue.textContent = `Score: ${score}/100`;
   scoreValue.style.left = `${100 - riskPercentage}%`;
 
@@ -103,39 +103,40 @@ function createRiskMeter(score: number): HTMLDivElement {
 function createSafetyBanner(hostname: string, score: number): void {
   // Check if banner should be shown based on settings and page type
   if (!BANNER_SETTINGS.enabled) return;
-  
+
   // Only show banner on homepage if setting is false
   if (!BANNER_SETTINGS.showOnAllPages) {
     // Check if we're on a subpage
     const path = window.location.pathname;
     if (path !== "/" && path !== "") return;
   }
-  
+
   // Check if a banner already exists and remove it
-  const existingBanner = document.querySelector('.sp-safety-banner');
+  const existingBanner = document.querySelector(".sp-safety-banner");
   if (existingBanner) {
     existingBanner.remove();
   }
-  
+
   // Check current host against score threshold
   if (score >= BANNER_THRESHOLD) return;
 
   // Create the banner element
-  const banner = document.createElement('div');
-  banner.className = 'sp-safety-banner';
-  
+  const banner = document.createElement("div");
+  banner.className = "sp-safety-banner";
+
   // Add high or medium risk class based on score
   if (score < VERY_RISKY_THRESHOLD) {
-    banner.classList.add('high-risk');
+    banner.classList.add("high-risk");
   } else {
-    banner.classList.add('medium-risk');
+    banner.classList.add("medium-risk");
   }
 
   // Set banner content
-  let warningLevel = score < VERY_RISKY_THRESHOLD ? "HIGH RISK" : "CAUTION";
-  let warningText = score < VERY_RISKY_THRESHOLD 
-    ? `This website (${hostname}) has been flagged as potentially unsafe with a very low security score.`
-    : `This website (${hostname}) has a low security score and might be risky to use.`;
+  const warningLevel = score < VERY_RISKY_THRESHOLD ? "HIGH RISK" : "CAUTION";
+  const warningText =
+    score < VERY_RISKY_THRESHOLD
+      ? `This website (${hostname}) has been flagged as potentially unsafe with a very low security score.`
+      : `This website (${hostname}) has a low security score and might be risky to use.`;
 
   banner.innerHTML = `
     <div class="sp-safety-banner-content">
@@ -143,10 +144,12 @@ function createSafetyBanner(hostname: string, score: number): void {
       <span class="sp-safety-banner-text">
         <strong>${warningLevel}:</strong> ${warningText}
       </span>
-      ${BANNER_SETTINGS.alwaysShowScore ? 
-        `<div class="sp-safety-banner-score">
+      ${
+        BANNER_SETTINGS.alwaysShowScore
+          ? `<div class="sp-safety-banner-score">
           Score: <span class="sp-safety-banner-score-value">${score}</span>
-        </div>` : ''
+        </div>`
+          : ""
       }
       <button class="sp-safety-banner-action" id="sp-check-site">Check Details</button>
     </div>
@@ -155,46 +158,54 @@ function createSafetyBanner(hostname: string, score: number): void {
 
   // Add the banner to the page
   document.body.appendChild(banner);
-  
+
   // Show the banner (with animation)
   setTimeout(() => {
-    banner.classList.add('show');
+    banner.classList.add("show");
   }, 500);
-  
+
   // Add event listeners
-  const closeButton = document.getElementById('sp-close-banner');
+  const closeButton = document.getElementById("sp-close-banner");
   if (closeButton) {
-    closeButton.addEventListener('click', () => {
-      banner.classList.remove('show');
+    closeButton.addEventListener("click", () => {
+      banner.classList.remove("show");
       setTimeout(() => {
         banner.remove();
       }, 300);
-      
+
       // Store that this banner was dismissed for this domain
       try {
-        const dismissedBanners = JSON.parse(localStorage.getItem('sp-dismissed-banners') || '{}');
+        const dismissedBanners = JSON.parse(
+          localStorage.getItem("sp-dismissed-banners") || "{}"
+        );
         dismissedBanners[hostname] = Date.now();
-        localStorage.setItem('sp-dismissed-banners', JSON.stringify(dismissedBanners));
+        localStorage.setItem(
+          "sp-dismissed-banners",
+          JSON.stringify(dismissedBanners)
+        );
       } catch (e) {
-        console.error('Failed to store banner dismissal:', e);
+        console.error("Failed to store banner dismissal:", e);
       }
     });
   }
-  
+
   // Add check site button handler
-  const checkSiteButton = document.getElementById('sp-check-site');
+  const checkSiteButton = document.getElementById("sp-check-site");
   if (checkSiteButton) {
-    checkSiteButton.addEventListener('click', () => {
+    checkSiteButton.addEventListener("click", () => {
       // Open the domain check in a new tab
-      window.open(`https://scam-protector.com?domain=${encodeURIComponent(hostname)}`, '_blank');
+      window.open(
+        `https://scam-protector.com?domain=${encodeURIComponent(hostname)}`,
+        "_blank"
+      );
     });
   }
-  
+
   // Auto-hide if enabled
   if (BANNER_SETTINGS.autoHide) {
     setTimeout(() => {
       if (banner.parentElement) {
-        banner.classList.remove('show');
+        banner.classList.remove("show");
         setTimeout(() => {
           banner.remove();
         }, 300);
@@ -206,34 +217,43 @@ function createSafetyBanner(hostname: string, score: number): void {
 // Check the current page's safety
 async function checkCurrentPage(): Promise<void> {
   const currentHostname = window.location.hostname;
-  
+
   if (!currentHostname) return;
-  
+
   // Check if we've recently dismissed a banner for this domain
   try {
-    const dismissedBanners = JSON.parse(localStorage.getItem('sp-dismissed-banners') || '{}');
+    const dismissedBanners = JSON.parse(
+      localStorage.getItem("sp-dismissed-banners") || "{}"
+    );
     const lastDismissed = dismissedBanners[currentHostname];
-    
+
     // If dismissed less than 1 hour ago, don't show again
-    if (lastDismissed && (Date.now() - lastDismissed < 60 * 60 * 1000)) {
-      console.debug(`[Scam-Protector] Banner for ${currentHostname} was recently dismissed, not showing again.`);
+    if (lastDismissed && Date.now() - lastDismissed < 60 * 60 * 1000) {
+      console.debug(
+        `[Scam-Protector] Banner for ${currentHostname} was recently dismissed, not showing again.`
+      );
       return;
     }
   } catch (e) {
     // Ignore storage errors
   }
-  
+
   try {
     // Get score for current page
     const scores = await getScoresForHosts([currentHostname]);
     const score = scores[currentHostname];
-    
+
     if (score !== undefined && score < BANNER_THRESHOLD) {
-      console.debug(`[Scam-Protector] Creating safety banner for ${currentHostname} with score ${score}`);
+      console.debug(
+        `[Scam-Protector] Creating safety banner for ${currentHostname} with score ${score}`
+      );
       createSafetyBanner(currentHostname, score);
     }
   } catch (error) {
-    console.error(`[Scam-Protector] Error checking current page safety:`, error);
+    console.error(
+      `[Scam-Protector] Error checking current page safety:`,
+      error
+    );
   }
 }
 
@@ -242,73 +262,74 @@ async function clearScoresCache(): Promise<void> {
   try {
     // Clear local memory cache
     scoreCache.clear();
-    
+
     // Clear storage cache via background script
     await chrome.runtime.sendMessage({
-      action: 'getScores',
-      clearCache: true
+      action: "getScores",
+      clearCache: true,
     });
-    
-    console.log('[Scam-Protector] Cache cleared successfully');
-    
+
+    console.log("[Scam-Protector] Cache cleared successfully");
+
     // Re-scan the page with fresh data
     await scanPage();
   } catch (error) {
-    console.error('[Scam-Protector] Failed to clear cache:', error);
+    console.error("[Scam-Protector] Failed to clear cache:", error);
   }
 }
 
 // Create debug UI control for testing
 function addDebugControls(): void {
   // Only add in development environments or when debug parameter is present
-  const isDebug = window.location.search.includes('sp-debug') || 
-                  window.location.hostname === 'localhost' ||
-                  window.location.hostname.includes('test');
-  
+  const isDebug =
+    window.location.search.includes("sp-debug") ||
+    window.location.hostname === "localhost" ||
+    window.location.hostname.includes("test");
+
   if (!isDebug) return;
-  
+
   // Create debug panel
-  const debugPanel = document.createElement('div');
-  debugPanel.style.position = 'fixed';
-  debugPanel.style.bottom = '10px';
-  debugPanel.style.right = '10px';
-  debugPanel.style.padding = '10px';
-  debugPanel.style.background = 'rgba(0,0,0,0.8)';
-  debugPanel.style.color = 'white';
-  debugPanel.style.borderRadius = '5px';
-  debugPanel.style.zIndex = '9999999';
-  debugPanel.style.fontSize = '12px';
-  debugPanel.style.fontFamily = 'Arial, sans-serif';
-  
+  const debugPanel = document.createElement("div");
+  debugPanel.style.position = "fixed";
+  debugPanel.style.bottom = "10px";
+  debugPanel.style.right = "10px";
+  debugPanel.style.padding = "10px";
+  debugPanel.style.background = "rgba(0,0,0,0.8)";
+  debugPanel.style.color = "white";
+  debugPanel.style.borderRadius = "5px";
+  debugPanel.style.zIndex = "9999999";
+  debugPanel.style.fontSize = "12px";
+  debugPanel.style.fontFamily = "Arial, sans-serif";
+
   // Add clear cache button
-  const clearButton = document.createElement('button');
-  clearButton.textContent = 'Clear Score Cache';
-  clearButton.style.background = '#ff3333';
-  clearButton.style.border = 'none';
-  clearButton.style.color = 'white';
-  clearButton.style.padding = '5px 10px';
-  clearButton.style.borderRadius = '3px';
-  clearButton.style.cursor = 'pointer';
-  clearButton.addEventListener('click', clearScoresCache);
-  
+  const clearButton = document.createElement("button");
+  clearButton.textContent = "Clear Score Cache";
+  clearButton.style.background = "#ff3333";
+  clearButton.style.border = "none";
+  clearButton.style.color = "white";
+  clearButton.style.padding = "5px 10px";
+  clearButton.style.borderRadius = "3px";
+  clearButton.style.cursor = "pointer";
+  clearButton.addEventListener("click", clearScoresCache);
+
   // Add scan page button
-  const scanButton = document.createElement('button');
-  scanButton.textContent = 'Force Re-scan';
-  scanButton.style.background = '#3333ff';
-  scanButton.style.border = 'none';
-  scanButton.style.color = 'white';
-  scanButton.style.padding = '5px 10px';
-  scanButton.style.marginLeft = '5px';
-  scanButton.style.borderRadius = '3px';
-  scanButton.style.cursor = 'pointer';
-  scanButton.addEventListener('click', () => scanPage());
-  
+  const scanButton = document.createElement("button");
+  scanButton.textContent = "Force Re-scan";
+  scanButton.style.background = "#3333ff";
+  scanButton.style.border = "none";
+  scanButton.style.color = "white";
+  scanButton.style.padding = "5px 10px";
+  scanButton.style.marginLeft = "5px";
+  scanButton.style.borderRadius = "3px";
+  scanButton.style.cursor = "pointer";
+  scanButton.addEventListener("click", () => scanPage());
+
   // Add status output
-  const statusDiv = document.createElement('div');
-  statusDiv.textContent = 'Scam-Protector debug mode';
-  statusDiv.style.marginTop = '5px';
-  statusDiv.style.fontSize = '10px';
-  
+  const statusDiv = document.createElement("div");
+  statusDiv.textContent = "Scam-Protector debug mode";
+  statusDiv.style.marginTop = "5px";
+  statusDiv.style.fontSize = "10px";
+
   // Assemble panel
   debugPanel.appendChild(clearButton);
   debugPanel.appendChild(scanButton);
@@ -420,13 +441,15 @@ async function scanPage(): Promise<void> {
 
   const scoreMap = await getScoresForHosts(hostnames);
   markRiskyLinks(scoreMap);
-  
+
   // If the current page hostname is in our scored hostnames, check if we need a banner
   const currentHostname = window.location.hostname;
   if (currentHostname && scoreMap[currentHostname] !== undefined) {
     const score = scoreMap[currentHostname];
     if (score < BANNER_THRESHOLD) {
-      console.debug(`[Scam-Protector] Current page (${currentHostname}) has low score: ${score}`);
+      console.debug(
+        `[Scam-Protector] Current page (${currentHostname}) has low score: ${score}`
+      );
       createSafetyBanner(currentHostname, score);
     }
   }
@@ -528,10 +551,10 @@ document.addEventListener("DOMContentLoaded", () => {
   loadAccessibilitySettings().then(() => {
     scanPage();
     observeDOMChanges();
-    
+
     // Check the current page's safety
     setTimeout(checkCurrentPage, 1000);
-    
+
     // Add debug controls if in test/dev environment
     setTimeout(addDebugControls, 1000);
   });

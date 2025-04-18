@@ -14,6 +14,7 @@ import {
   Shield,
   User,
   X,
+  Download,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -221,6 +222,11 @@ const Header = () => {
               icon={<AlertTriangle className="w-4 h-4" />}
               label="Report Scam"
             />
+            <NavLink
+              href="/extension"
+              icon={<Download className="w-4 h-4" />}
+              label="Extension"
+            />
 
             {/* User Authentication - Optimized with separate render function */}
             {renderAuthSection()}
@@ -273,6 +279,11 @@ const Header = () => {
               href="/report"
               label="Report a Scam"
               icon={<AlertTriangle className="w-5 h-5" />}
+            />
+            <MobileNavLink
+              href="/extension"
+              label="Extension"
+              icon={<Download className="w-5 h-5" />}
             />
 
             {/* Mobile Authentication Links - Optimized with separate render function */}

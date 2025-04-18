@@ -23,16 +23,19 @@ A Chrome extension that automatically scans links on web pages and warns users a
 
 1. Clone the repository
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Build the extension:
+
 ```bash
 npm run build:ext
 ```
 
 This will:
+
 - Bundle the TypeScript files with esbuild
 - Copy all necessary assets to the `public/extension` directory
 
@@ -55,7 +58,7 @@ This will:
 
 The extension communicates with the scam-protector.com API, which requires:
 
-- POST to `/api/bulk-score` 
+- POST to `/api/bulk-score`
 - Request body: `{ "hosts": ["example.com", "another-domain.com"] }`
 - Response: `{ "example.com": 85, "another-domain.com": 30 }`
 

@@ -2,12 +2,12 @@
  * Copy extension assets to the public directory
  * This script is used to replace shell commands that don't work on Windows
  */
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 // Ensure the output directory exists
-const publicExtDir = path.resolve(__dirname, '../public/extension');
-const publicExtIconsDir = path.resolve(__dirname, '../public/extension/icons');
+const publicExtDir = path.resolve(__dirname, "../public/extension");
+const publicExtIconsDir = path.resolve(__dirname, "../public/extension/icons");
 
 if (!fs.existsSync(publicExtDir)) {
   fs.mkdirSync(publicExtDir, { recursive: true });
@@ -19,23 +19,23 @@ if (!fs.existsSync(publicExtIconsDir)) {
 
 // Copy manifest.json
 fs.copyFileSync(
-  path.resolve(__dirname, '../extension/manifest.json'),
-  path.resolve(__dirname, '../public/extension/manifest.json')
+  path.resolve(__dirname, "../extension/manifest.json"),
+  path.resolve(__dirname, "../public/extension/manifest.json")
 );
-console.log('✅ Copied manifest.json');
+console.log("✅ Copied manifest.json");
 
 // Copy styles.css
 fs.copyFileSync(
-  path.resolve(__dirname, '../extension/styles.css'),
-  path.resolve(__dirname, '../public/extension/styles.css')
+  path.resolve(__dirname, "../extension/styles.css"),
+  path.resolve(__dirname, "../public/extension/styles.css")
 );
-console.log('✅ Copied styles.css');
+console.log("✅ Copied styles.css");
 
 // Copy icons
-const iconDir = path.resolve(__dirname, '../extension/icons');
+const iconDir = path.resolve(__dirname, "../extension/icons");
 if (fs.existsSync(iconDir)) {
   const icons = fs.readdirSync(iconDir);
-  icons.forEach(icon => {
+  icons.forEach((icon) => {
     const srcPath = path.join(iconDir, icon);
     const destPath = path.join(publicExtIconsDir, icon);
     if (fs.statSync(srcPath).isFile()) {
@@ -45,4 +45,4 @@ if (fs.existsSync(iconDir)) {
   });
 }
 
-console.log('✅ All extension assets copied successfully');
+console.log("✅ All extension assets copied successfully");

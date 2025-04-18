@@ -9,31 +9,31 @@ const copyExtensionAssets = () => {
     // Ensure the output directory exists
     const publicExtDir = path.resolve("public/extension");
     const publicExtIconsDir = path.resolve("public/extension/icons");
-    
+
     if (!fs.existsSync(publicExtDir)) {
       fs.mkdirSync(publicExtDir, { recursive: true });
     }
-    
+
     if (!fs.existsSync(publicExtIconsDir)) {
       fs.mkdirSync(publicExtIconsDir, { recursive: true });
     }
-    
+
     // Copy the manifest and styles
     fs.copyFileSync(
       path.resolve("extension/manifest.json"),
       path.resolve("public/extension/manifest.json")
     );
-    
+
     fs.copyFileSync(
       path.resolve("extension/styles.css"),
       path.resolve("public/extension/styles.css")
     );
-    
+
     // Copy icons (this assumes icons exist)
     const iconDir = path.resolve("extension/icons");
     if (fs.existsSync(iconDir)) {
       const icons = fs.readdirSync(iconDir);
-      icons.forEach(icon => {
+      icons.forEach((icon) => {
         const srcPath = path.join(iconDir, icon);
         const destPath = path.join(publicExtIconsDir, icon);
         if (fs.statSync(srcPath).isFile()) {
@@ -41,7 +41,7 @@ const copyExtensionAssets = () => {
         }
       });
     }
-    
+
     console.log("Extension assets copied successfully");
   } catch (error) {
     console.error("Error copying extension assets:", error);
@@ -79,7 +79,7 @@ const nextConfig: NextConfig = {
     // This can help with hydration issues
     optimizeCss: true,
   },
-  
+
   // Copy extension assets when building for production
   webpack: (config, { isServer, dev }) => {
     // Copy extension assets in production builds
@@ -88,7 +88,7 @@ const nextConfig: NextConfig = {
       copyExtensionAssets();
     }
     return config;
-  }
+  },
 };
 
 export default nextConfig;
