@@ -9,6 +9,7 @@
     "lint": "next lint",
     "build:ext": "esbuild extension/content.ts --bundle --minify --outfile=public/extension/content.js && esbuild extension/background.ts --bundle --minify --outfile=public/extension/background.js && npm run copy:ext",
     "copy:ext": "node scripts/copy-extension-assets.js",
+    "refresh:ext": "node scripts/refresh-extension.js",
     "build:all": "npm run build && npm run build:ext",
     "package:ext": "npm run build:ext && node scripts/package-extension.js"
   },

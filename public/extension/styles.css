@@ -1,3 +1,4 @@
+/* Version: 2025-04-18T15:02:56.181Z - Cache busting timestamp */
 .sp-danger {
   outline: 3px solid #ff3333 !important;
   outline-offset: 3px !important;
@@ -67,11 +68,12 @@
   width: var(--risk-level, 50%);
   transition: width 0.5s ease-in-out;
   border-radius: 2px;
-  background: linear-gradient(90deg, 
-    #02c39a 0%, 
-    #8ac926 30%, 
-    #ffca3a 50%, 
-    #ff924c 70%, 
+  background: linear-gradient(
+    90deg,
+    #02c39a 0%,
+    #8ac926 30%,
+    #ffca3a 50%,
+    #ff924c 70%,
     #ff595e 100%
   );
 }
@@ -215,9 +217,15 @@
 
 /* Add pulsing effect to make dangerous links more noticeable */
 @keyframes sp-pulse {
-  0% { outline-color: rgba(255, 51, 51, 1); }
-  50% { outline-color: rgba(255, 51, 51, 0.6); }
-  100% { outline-color: rgba(255, 51, 51, 1); }
+  0% {
+    outline-color: rgba(255, 51, 51, 1);
+  }
+  50% {
+    outline-color: rgba(255, 51, 51, 0.6);
+  }
+  100% {
+    outline-color: rgba(255, 51, 51, 1);
+  }
 }
 
 /* High contrast mode for visually impaired users */
@@ -226,14 +234,14 @@
     outline: 5px solid #ff0000 !important;
     background-color: #ffeeee !important;
   }
-  
+
   .sp-danger::before {
     background-color: #000000;
     color: #ffffff;
     font-size: 18px;
     border: 2px solid #ffffff;
   }
-  
+
   .sp-safety-banner {
     background-color: #000000;
     border-bottom: 4px solid #ffffff;
@@ -268,20 +276,20 @@
   .sp-danger {
     animation: none;
   }
-  
+
   .sp-danger::before {
     transition: opacity 0.1s linear;
     transform: none;
   }
-  
+
   .sp-danger:hover::before {
     transform: none;
   }
-  
+
   .sp-risk-meter-fill {
     transition: none;
   }
-  
+
   .sp-safety-banner {
     transition: none;
   }
@@ -294,7 +302,7 @@
     white-space: normal;
     top: -60px;
   }
-  
+
   .sp-safety-banner-text {
     font-size: 14px;
   }

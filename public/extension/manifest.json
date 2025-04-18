@@ -1,15 +1,27 @@
 {
   "manifest_version": 3,
   "name": "Scam-Protector",
-  "version": "1.0.0",
+  "version": "2025.04.18.1802",
   "description": "Automatically scans links on web pages and warns about potential scams",
-  "permissions": ["storage", "scripting"],
-  "host_permissions": ["https://scam-protector.com/*"],
+  "permissions": [
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://scam-protector.com/*"
+  ],
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*"],
-      "js": ["content.js"],
-      "css": ["styles.css"]
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "styles.css"
+      ]
     }
   ],
   "background": {

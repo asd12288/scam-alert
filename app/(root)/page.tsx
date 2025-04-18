@@ -2,8 +2,9 @@
 
 import InputScam from "@/components/InputScamForm";
 import React, { useState, useEffect } from "react";
-import { Shield } from "lucide-react";
+import { Shield, Download } from "lucide-react";
 import { JsonLd } from "react-schemaorg";
+import Link from "next/link";
 
 const Page = () => {
   const [hasResults, setHasResults] = useState(false);
@@ -63,6 +64,14 @@ const Page = () => {
               Using advanced technology to detect and protect you from
               sophisticated online scams.
             </p>
+            <div className="mt-3">
+              <Link 
+                href="/extension" 
+                className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 hover:underline"
+              >
+                <Download className="w-4 h-4 mr-1" /> Get our browser extension
+              </Link>
+            </div>
           </div>
 
           {/* Main search form - centered with proper width constraints */}
