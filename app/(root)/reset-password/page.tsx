@@ -5,8 +5,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Reset Password | AI Scam Alert",
-  description: "Reset your password to regain access to your account",
+  title: "Reset Password | Scam Protector",
+  description: "Reset your Scam Protector account password",
 };
 
 const ResetPasswordPage = () => {

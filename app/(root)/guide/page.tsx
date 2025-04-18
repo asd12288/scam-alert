@@ -3,9 +3,9 @@ import Link from "next/link";
 import { Shield, ChevronRight } from "lucide-react";
 
 export const metadata = {
-  title: "AI Scam Prevention Guide | AI Scam Alert",
+  title: "Scam Prevention Guide | Scam Protector",
   description:
-    "Comprehensive guide powered by AI to protect yourself from online scams",
+    "Comprehensive guide to protect yourself from online scams",
 };
 
 export default function GuidePage() {

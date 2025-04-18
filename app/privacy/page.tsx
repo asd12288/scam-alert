@@ -1,9 +1,8 @@
 import React from "react";
 
 export const metadata = {
-  title: "Privacy Policy | AI Scam Alert",
-  description:
-    "Privacy Policy for AI Scam Alert's online scam detection service",
+  title: "Privacy Policy | Scam Protector",
+  description: "Privacy Policy for Scam Protector's online scam detection service",
 };
 
 const PrivacyPolicy = () => {
@@ -17,7 +16,7 @@ const PrivacyPolicy = () => {
         <section className="mb-8">
           <h2 className="text-2xl font-semibold mb-4">Introduction</h2>
           <p>
-            AI Scam Alert ("we," "our," or "us") respects your privacy and is
+            Scam Protector ("we," "our," or "us") respects your privacy and is
             committed to protecting your personal information. This Privacy
             Policy explains how we collect, use, disclose, and safeguard your
             information when you use our website and services.
@@ -117,7 +116,7 @@ const PrivacyPolicy = () => {
           </ul>
           <p>
             To exercise these rights, please contact us at
-            privacy@aiscamalert.com.
+            privacy@scamprotector.com.
           </p>
         </section>
 
@@ -136,7 +135,7 @@ const PrivacyPolicy = () => {
           <h2 className="text-2xl font-semibold mb-4">Contact Us</h2>
           <p>
             If you have questions or concerns about this Privacy Policy, please
-            contact us at privacy@aiscamalert.com.
+            contact us at privacy@scamprotector.com.
           </p>
         </section>
       </div>

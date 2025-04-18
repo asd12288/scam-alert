@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Scam Alert - Detect Online Scams",
-  description: "Using AI to help you avoid online scams and phishing attacks",
+  title: "Scam Protector - Detect Online Scams",
+  description: "Using advanced technology to help you avoid online scams and phishing attacks",
 };
 
 export default function RootLayout({

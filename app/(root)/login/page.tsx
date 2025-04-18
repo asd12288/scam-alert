@@ -4,8 +4,8 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sign In | AI Scam Alert",
-  description: "Sign in to your AI Scam Alert account",
+  title: "Sign In | Scam Protector",
+  description: "Sign in to your Scam Protector account",
 };
 
 const LoginPage = () => {

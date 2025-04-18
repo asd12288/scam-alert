@@ -1,9 +1,9 @@
 import React from "react";
 
 export const metadata = {
-  title: "Legal Information | AI Scam Alert",
+  title: "Legal Information | Scam Protector",
   description:
-    "Legal information, terms of service, and disclaimers for AI Scam Alert",
+    "Legal information, terms of service, and disclaimers for Scam Protector",
 };
 
 const Legal = () => {
@@ -17,7 +17,7 @@ const Legal = () => {
         <section className="mb-8">
           <h2 className="text-2xl font-semibold mb-4">Terms of Service</h2>
           <p className="mb-4">
-            By accessing or using AI Scam Alert, you agree to be bound by these
+            By accessing or using Scam Protector, you agree to be bound by these
             Terms of Service. If you disagree with any part of the terms, you
             may not access the service.
           </p>
@@ -46,7 +46,7 @@ const Legal = () => {
         <section className="mb-8">
           <h2 className="text-2xl font-semibold mb-4">Disclaimer</h2>
           <p className="mb-4">
-            AI Scam Alert is provided "as is" and "as available" without any
+            Scam Protector is provided "as is" and "as available" without any
             warranties of any kind. We do not guarantee that:
           </p>
           <ul className="list-disc pl-6 mb-4">
@@ -72,11 +72,11 @@ const Legal = () => {
             Limitation of Liability
           </h2>
           <p>
-            In no event shall AI Scam Alert, its directors, employees, partners,
-            agents, suppliers, or affiliates be liable for any indirect,
-            incidental, special, consequential, or punitive damages, including
-            without limitation, loss of profits, data, use, goodwill, or other
-            intangible losses, resulting from:
+            In no event shall Scam Protector, its directors, employees,
+            partners, agents, suppliers, or affiliates be liable for any
+            indirect, incidental, special, consequential, or punitive damages,
+            including without limitation, loss of profits, data, use, goodwill,
+            or other intangible losses, resulting from:
           </p>
           <ul className="list-disc pl-6 mb-4">
             <li>
@@ -113,7 +113,7 @@ const Legal = () => {
           <h2 className="text-2xl font-semibold mb-4">Contact Us</h2>
           <p>
             If you have any questions about these Terms, please contact us at
-            legal@aiscamalert.com.
+            legal@scamprotector.com.
           </p>
         </section>
       </div>

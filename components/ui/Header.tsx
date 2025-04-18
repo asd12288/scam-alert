@@ -192,7 +192,7 @@ const Header = () => {
               <Shield className="w-5 h-5" />
             </div>
             <span className="font-semibold text-xl text-blue-600">
-              AI Scam Alert
+              Scam Protector
             </span>
           </Link>
 

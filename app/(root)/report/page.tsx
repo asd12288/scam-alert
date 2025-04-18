@@ -1,11 +1,10 @@
-
 import React from "react";
 import { Shield, AlertTriangle, Brain } from "lucide-react";
 import { Metadata } from "next";
 import { Report } from "@/components/Report";
 
 export const metadata: Metadata = {
-  title: "Report a Scam | AI Scam Alert",
+  title: "Report a Scam | Scam Protector",
   description:
     "Report potential scams to help protect others from online fraud",
 };

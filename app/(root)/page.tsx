@@ -36,11 +36,11 @@ const Page = () => {
           <div className="flex items-center justify-center mb-4">
             <Shield className="w-10 h-10 sm:w-12 sm:h-12 text-blue-600 mr-2" />
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-gray-100">
-              <span className="text-blue-600">AI</span> Scam Alert
+              Scam Protector
             </h1>
           </div>
           <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto text-base sm:text-lg px-4">
-            Using AI to detect and protect you from
+            Using advanced technology to detect and protect you from
             sophisticated online scams.
           </p>
         </div>
