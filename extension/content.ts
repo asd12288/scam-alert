@@ -8,20 +8,29 @@ interface HostScoreMap {
 // Cache for storing scores to avoid unnecessary API calls
 const scoreCache = new Map<string, { score: number; timestamp: number }>();
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutes in milliseconds
-const RISKY_THRESHOLD = 40; // Links with scores below this are marked as risky
+const RISKY_THRESHOLD = 60; // Links with scores below 60 are marked as risky (aligned with app)
+const VERY_RISKY_THRESHOLD = 30; // Links with scores below 30 are considered very risky
+
+// Accessibility settings - can later be made configurable via options page
+const ACCESSIBILITY = {
+  largeText: true,            // Use larger text for warnings
+  highContrast: false,        // Force high contrast mode
+  verboseWarnings: true,      // Use more descriptive warnings
+  animationReduced: false,    // Reduce animations for users who prefer reduced motion
+};
 
 // Extract unique hostnames from all links on the page
 function extractHostnames(): string[] {
-  const links = document.querySelectorAll('a[href]');
+  const links = document.querySelectorAll("a[href]");
   const hostnames = new Set<string>();
 
-  links.forEach(link => {
+  links.forEach((link) => {
     try {
-      const href = link.getAttribute('href');
+      const href = link.getAttribute("href");
       if (!href) return;
 
       // Only process http/https links
-      if (href.startsWith('http://') || href.startsWith('https://')) {
+      if (href.startsWith("http://") || href.startsWith("https://")) {
         const url = new URL(href);
         hostnames.add(url.hostname);
       }
@@ -33,21 +42,144 @@ function extractHostnames(): string[] {
   return Array.from(hostnames);
 }
 
+// Get custom warning text based on risk level
+function getWarningText(score: number): string {
+  if (ACCESSIBILITY.verboseWarnings) {
+    if (score < VERY_RISKY_THRESHOLD) {
+      return "⚠️ WARNING: This website appears to be unsafe! High risk of scam or fraud. Avoid clicking.";
+    } else {
+      return "⚠️ CAUTION: This website has a low trust score and might be unsafe. Click with caution.";
+    }
+  } else {
+    return "⚠️ Potential scam: low trust score";
+  }
+}
+
+// Clear the extension's cache (for debugging)
+async function clearScoresCache(): Promise<void> {
+  try {
+    // Clear local memory cache
+    scoreCache.clear();
+    
+    // Clear storage cache via background script
+    await chrome.runtime.sendMessage({
+      action: 'getScores',
+      clearCache: true
+    });
+    
+    console.log('[Scam-Protector] Cache cleared successfully');
+    
+    // Re-scan the page with fresh data
+    await scanPage();
+  } catch (error) {
+    console.error('[Scam-Protector] Failed to clear cache:', error);
+  }
+}
+
+// Create debug UI control for testing
+function addDebugControls(): void {
+  // Only add in development environments or when debug parameter is present
+  const isDebug = window.location.search.includes('sp-debug') || 
+                  window.location.hostname === 'localhost' ||
+                  window.location.hostname.includes('test');
+  
+  if (!isDebug) return;
+  
+  // Create debug panel
+  const debugPanel = document.createElement('div');
+  debugPanel.style.position = 'fixed';
+  debugPanel.style.bottom = '10px';
+  debugPanel.style.right = '10px';
+  debugPanel.style.padding = '10px';
+  debugPanel.style.background = 'rgba(0,0,0,0.8)';
+  debugPanel.style.color = 'white';
+  debugPanel.style.borderRadius = '5px';
+  debugPanel.style.zIndex = '9999999';
+  debugPanel.style.fontSize = '12px';
+  debugPanel.style.fontFamily = 'Arial, sans-serif';
+  
+  // Add clear cache button
+  const clearButton = document.createElement('button');
+  clearButton.textContent = 'Clear Score Cache';
+  clearButton.style.background = '#ff3333';
+  clearButton.style.border = 'none';
+  clearButton.style.color = 'white';
+  clearButton.style.padding = '5px 10px';
+  clearButton.style.borderRadius = '3px';
+  clearButton.style.cursor = 'pointer';
+  clearButton.addEventListener('click', clearScoresCache);
+  
+  // Add scan page button
+  const scanButton = document.createElement('button');
+  scanButton.textContent = 'Force Re-scan';
+  scanButton.style.background = '#3333ff';
+  scanButton.style.border = 'none';
+  scanButton.style.color = 'white';
+  scanButton.style.padding = '5px 10px';
+  scanButton.style.marginLeft = '5px';
+  scanButton.style.borderRadius = '3px';
+  scanButton.style.cursor = 'pointer';
+  scanButton.addEventListener('click', () => scanPage());
+  
+  // Add status output
+  const statusDiv = document.createElement('div');
+  statusDiv.textContent = 'Scam-Protector debug mode';
+  statusDiv.style.marginTop = '5px';
+  statusDiv.style.fontSize = '10px';
+  
+  // Assemble panel
+  debugPanel.appendChild(clearButton);
+  debugPanel.appendChild(scanButton);
+  debugPanel.appendChild(statusDiv);
+  document.body.appendChild(debugPanel);
+}
+
 // Mark links that match risky hostnames
 function markRiskyLinks(scoreMap: HostScoreMap): void {
-  const links = document.querySelectorAll('a[href]');
+  const links = document.querySelectorAll("a[href]");
 
-  links.forEach(link => {
+  links.forEach((link) => {
     try {
-      const href = link.getAttribute('href');
+      const href = link.getAttribute("href");
       if (!href) return;
 
-      if (href.startsWith('http://') || href.startsWith('https://')) {
+      if (href.startsWith("http://") || href.startsWith("https://")) {
         const url = new URL(href);
         const score = scoreMap[url.hostname];
-        
-        if (score !== undefined && score < RISKY_THRESHOLD) {
-          link.classList.add('sp-danger');
+
+        // Only process links with actual scores (avoid false positives)
+        if (score !== undefined) {
+          // Debug logging to help troubleshoot score issues
+          console.debug(`Scam-Protector: ${url.hostname} has score ${score}`);
+
+          if (score < RISKY_THRESHOLD) {
+            link.classList.add("sp-danger");
+
+            // Set custom warning message based on risk level
+            const warningText = getWarningText(score);
+            link.setAttribute("data-sp-warning", warningText);
+
+            // Add aria attributes for screen readers
+            link.setAttribute("aria-description", warningText);
+
+            // For very risky sites, add an additional visual indicator
+            if (score < VERY_RISKY_THRESHOLD) {
+              link.classList.add("sp-danger-badge");
+            }
+
+            // Apply accessibility settings
+            if (ACCESSIBILITY.largeText) {
+              link.style.setProperty("--sp-warning-font-size", "16px");
+            }
+
+            if (ACCESSIBILITY.highContrast) {
+              link.classList.add("sp-high-contrast");
+            }
+
+            if (ACCESSIBILITY.animationReduced) {
+              link.style.setProperty("--sp-animation", "none");
+            }
+          }
         }
       }
     } catch (e) {
@@ -58,12 +190,11 @@ function markRiskyLinks(scoreMap: HostScoreMap): void {
 
 // Get scores from cache or request from background script
 async function getScoresForHosts(hostnames: string[]): Promise<HostScoreMap> {
-  // Filter out hostnames that are already in the cache and still valid
   const now = Date.now();
   const cachedScores: HostScoreMap = {};
   const hostsToFetch: string[] = [];
 
-  hostnames.forEach(hostname => {
+  hostnames.forEach((hostname) => {
     const cached = scoreCache.get(hostname);
     if (cached && now - cached.timestamp < CACHE_TTL) {
       cachedScores[hostname] = cached.score;
@@ -72,27 +203,23 @@ async function getScoresForHosts(hostnames: string[]): Promise<HostScoreMap> {
     }
   });
 
-  // If no hosts need fetching, return cached results
   if (hostsToFetch.length === 0) {
     return cachedScores;
   }
 
   try {
-    // Request scores from background script
     const newScores: HostScoreMap = await chrome.runtime.sendMessage({
-      action: 'getScores',
-      hosts: hostsToFetch
+      action: "getScores",
+      hosts: hostsToFetch,
     });
 
-    // Cache the new scores
     Object.entries(newScores).forEach(([host, score]) => {
       scoreCache.set(host, { score, timestamp: now });
     });
 
-    // Merge cached and new scores
     return { ...cachedScores, ...newScores };
   } catch (error) {
-    console.warn('Scam-Protector: Failed to get scores', error);
+    console.warn("Scam-Protector: Failed to get scores", error);
     return cachedScores;
   }
 }
@@ -108,11 +235,11 @@ async function scanPage(): Promise<void> {
 
 // Throttle function to avoid performance issues
 function throttle<T extends (...args: any[]) => any>(
-  func: T, 
+  func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
   let inThrottle = false;
-  return function(this: any, ...args: Parameters<T>): void {
+  return function (this: any, ...args: Parameters<T>): void {
     if (!inThrottle) {
       func.apply(this, args);
       inThrottle = true;
@@ -126,23 +253,26 @@ function throttle<T extends (...args: any[]) => any>(
 // Set up mutation observer to detect new links
 function observeDOMChanges(): void {
   const throttledScan = throttle(scanPage, 1000);
-  
+
   const observer = new MutationObserver((mutations) => {
     let shouldScan = false;
-    
+
     for (const mutation of mutations) {
-      if (mutation.type === 'childList' || mutation.type === 'attributes') {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'href') {
+      if (mutation.type === "childList" || mutation.type === "attributes") {
+        if (
+          mutation.type === "attributes" &&
+          mutation.attributeName === "href"
+        ) {
           shouldScan = true;
           break;
         }
-        
+
         if (mutation.addedNodes.length > 0) {
           for (let i = 0; i < mutation.addedNodes.length; i++) {
             const node = mutation.addedNodes[i];
             if (node.nodeType === Node.ELEMENT_NODE) {
               const element = node as Element;
-              if (element.tagName === 'A' || element.querySelector('a')) {
+              if (element.tagName === "A" || element.querySelector("a")) {
                 shouldScan = true;
                 break;
               }
@@ -150,13 +280,12 @@ function observeDOMChanges(): void {
           }
         }
       }
-      
+
       if (shouldScan) break;
     }
-    
+
     if (shouldScan) {
-      // Use requestIdleCallback if available, otherwise use setTimeout
-      if ('requestIdleCallback' in window) {
+      if ("requestIdleCallback" in window) {
         window.requestIdleCallback(() => throttledScan());
       } else {
         setTimeout(() => throttledScan(), 100);
@@ -168,20 +297,45 @@ function observeDOMChanges(): void {
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: ['href']
+    attributeFilter: ["href"],
   });
 }
 
+// Read user's preferred accessibility settings if available
+async function loadAccessibilitySettings() {
+  try {
+    const settings = await chrome.storage.sync.get("accessibility");
+    if (settings.accessibility) {
+      Object.assign(ACCESSIBILITY, settings.accessibility);
+    }
+
+    if (ACCESSIBILITY.largeText) {
+      const style = document.createElement("style");
+      style.textContent = `
+        .sp-danger::before {
+          font-size: 18px !important;
+          padding: 10px 14px !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  } catch (e) {
+    console.warn("Scam-Protector: Could not load accessibility settings");
+  }
+}
+
 // Initialize when DOM is fully loaded
-document.addEventListener('DOMContentLoaded', () => {
-  // Initial scan
-  scanPage();
-  
-  // Observe DOM for changes
-  observeDOMChanges();
+document.addEventListener("DOMContentLoaded", () => {
+  loadAccessibilitySettings().then(() => {
+    scanPage();
+    observeDOMChanges();
+    
+    // Add debug controls if in test/dev environment
+    setTimeout(addDebugControls, 1000);
+  });
 });
 
 // Also scan when page is fully loaded (for images and dynamically loaded content)
-window.addEventListener('load', () => {
+window.addEventListener("load", () => {
   setTimeout(scanPage, 1000);
 });

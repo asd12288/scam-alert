@@ -1,72 +1,79 @@
 import { NextRequest, NextResponse } from "next/server";
+import { calculateSecurityScore, SecurityDetails } from "../domain-analysis/utils";
 
-// Mock scoring function - replace with your actual implementation
-// This would typically use your existing domain scoring logic
-async function getDomainScore(domain: string): Promise<number> {
-  // For demo purposes, we'll generate a random score based on domain name hash
-  // In production, you would use your actual domain scoring logic
-  // This ensures consistent scores for the same domain
-  let hash = 0;
-  for (let i = 0; i < domain.length; i++) {
-    hash = ((hash << 5) - hash) + domain.charCodeAt(i);
-    hash |= 0; // Convert to 32bit integer
+// Helper function to execute domain analysis with caching
+async function analyzeDomain(domain: string, origin: string): Promise<number> {
+  try {
+    // Use the same endpoint that the web form uses (/api/domain-security)
+    // to ensure consistent scoring between extension and web app
+    const response = await fetch(`${origin}/api/domain-security`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domain })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Domain analysis failed with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(`[bulk-score] Domain ${domain} scored: ${data.score}`);
+    return data.score;
+  } catch (error) {
+    console.error(`Error analyzing domain ${domain}:`, error);
+    return 50; // Default moderate score
   }
-  
-  // Generate a score between 0 and 100
-  // For demo purposes: domains with "scam" or "phish" will have low scores
-  const baseScore = Math.abs(hash % 100);
-  if (domain.includes('scam') || domain.includes('phish')) {
-    return Math.min(35, baseScore);
-  }
-  
-  // Well-known domains get higher scores
-  if (
-    domain.includes('google') || 
-    domain.includes('microsoft') || 
-    domain.includes('apple') || 
-    domain.includes('amazon') || 
-    domain.includes('github')
-  ) {
-    return Math.max(80, baseScore);
-  }
-  
-  return baseScore;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { hosts } = body as { hosts: string[] };
+    const { hosts } = await request.json() as { hosts: string[] };
 
-    if (!Array.isArray(hosts)) {
-      return NextResponse.json({ error: "Invalid request: 'hosts' must be an array" }, { status: 400 });
+    if (!Array.isArray(hosts) || !hosts.length) {
+      return NextResponse.json({ error: "Invalid hosts array" }, { status: 400 });
     }
 
     // Rate limiting
-    if (hosts.length > 200) {
-      return NextResponse.json({ error: "Too many hosts. Maximum allowed: 200" }, { status: 429 });
+    if (hosts.length > 50) {
+      return NextResponse.json({ error: "Too many hosts. Maximum allowed: 50" }, { status: 429 });
     }
 
-    // Process each domain and calculate scores
-    const scores: Record<string, number> = {};
+    console.log(`[bulk-score] Processing ${hosts.length} hosts`);
+    const origin = request.nextUrl.origin;
 
-    await Promise.all(
-      hosts.map(async (host) => {
-        scores[host] = await getDomainScore(host);
-      })
-    );
+    // Process domains in smaller batches to avoid overwhelming the system
+    const batchSize = 5;
+    const scoreMap: Record<string, number> = {};
+    
+    // Process hosts in batches
+    for (let i = 0; i < hosts.length; i += batchSize) {
+      const batch = hosts.slice(i, i + batchSize);
+      console.log(`[bulk-score] Processing batch ${i/batchSize + 1} with ${batch.length} hosts`);
+      
+      const batchPromises = batch.map(async (domain) => {
+        const cleanDomain = domain.trim().toLowerCase();
+        const score = await analyzeDomain(cleanDomain, origin);
+        return [cleanDomain, score] as [string, number];
+      });
+      
+      const results = await Promise.all(batchPromises);
+      results.forEach(([domain, score]) => {
+        scoreMap[domain] = score;
+      });
+    }
 
-    // Set CORS headers
-    return NextResponse.json(scores, {
+    // Set CORS headers for extension
+    return NextResponse.json(scoreMap, {
       status: 200,
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "content-type",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
         "Cache-Control": "public, max-age=3600, s-maxage=3600",
       },
     });
   } catch (error) {
-    console.error("Error in bulk-score API:", error);
+    console.error("Bulk score API error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scam-Protector Extension Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .link-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .link-item {
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            background-color: white;
+        }
+        .instructions {
+            padding: 15px;
+            margin-top: 20px;
+            background-color: #e9f7fe;
+            border-left: 4px solid #0078d7;
+        }
+        .status {
+            margin-top: 30px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+        }
+        .status-indicator {
+            font-weight: bold;
+            color: #999;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0063b1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Scam-Protector Extension Test Page</h1>
+    
+    <div class="instructions">
+        <h3>How to Use This Test Page</h3>
+        <p>This page contains various types of links to test if your Scam-Protector extension is working correctly. 
+        Links to domains that include "scam" or "phish" should be marked with a red outline and display a warning tooltip on hover.</p>
+        <p>Note: Make sure the extension is properly installed before testing.</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Links</h2>
+        <p>Below are various links for testing. Your extension should mark the suspicious ones:</p>
+        
+        <div class="link-grid">
+            <div class="link-item">
+                <h4>Should be safe:</h4>
+                <a href="https://google.com">Google</a>
+            </div>
+            <div class="link-item">
+                <h4>Should be safe:</h4>
+                <a href="https://microsoft.com">Microsoft</a>
+            </div>
+            <div class="link-item">
+                <h4>Should be flagged:</h4>
+                <a href="https://obvious-scam-site.com">Suspicious Site</a>
+            </div>
+            <div class="link-item">
+                <h4>Should be flagged:</h4>
+                <a href="https://phishing-example.net">Phishing Example</a>
+            </div>
+            <div class="link-item">
+                <h4>Should be safe:</h4>
+                <a href="https://github.com">GitHub</a>
+            </div>
+            <div class="link-item">
+                <h4>Should be safe:</h4>
+                <a href="https://apple.com">Apple</a>
+            </div>
+            <div class="link-item">
+                <h4>Should be flagged:</h4>
+                <a href="https://scam-alerts-fake.org">Fake Alert Site</a>
+            </div>
+            <div class="link-item">
+                <h4>Should be flagged:</h4>
+                <a href="https://login-phishing-page.com">Login Phishing</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Dynamic Link Test</h2>
+        <p>This section tests the extension's ability to detect dynamically added links:</p>
+        <div id="dynamic-link-container">
+            <button id="add-safe-link">Add Safe Link</button>
+            <button id="add-suspicious-link">Add Suspicious Link</button>
+        </div>
+        <div id="dynamic-links"></div>
+    </div>
+
+    <div class="status">
+        <h2>Extension Status</h2>
+        <p>
+            Status: <span id="extension-status" class="status-indicator">Checking...</span>
+        </p>
+    </div>
+
+    <script>
+        // Function to add dynamic links
+        document.getElementById('add-safe-link').addEventListener('click', function() {
+            const container = document.getElementById('dynamic-links');
+            const linkDiv = document.createElement('div');
+            linkDiv.className = 'link-item';
+            linkDiv.innerHTML = `<h4>Dynamic Safe Link:</h4>
+                               <a href="https://amazon.com">Amazon (Safe)</a>`;
+            container.appendChild(linkDiv);
+        });
+
+        document.getElementById('add-suspicious-link').addEventListener('click', function() {
+            const container = document.getElementById('dynamic-links');
+            const linkDiv = document.createElement('div');
+            linkDiv.className = 'link-item';
+            linkDiv.innerHTML = `<h4>Dynamic Suspicious Link:</h4>
+                               <a href="https://new-scam-website.com">New Scam Site</a>`;
+            container.appendChild(linkDiv);
+        });
+
+        // Check if extension is active
+        setTimeout(() => {
+            // Look for any links that have the sp-danger class
+            const markedLinks = document.querySelectorAll('.sp-danger');
+            const statusElement = document.getElementById('extension-status');
+            
+            if (markedLinks.length > 0) {
+                statusElement.textContent = 'ACTIVE - Extension is working! Suspicious links are being marked.';
+                statusElement.style.color = '#00a651';
+            } else {
+                // If no links are marked after 3 seconds, assume extension might not be working
+                statusElement.textContent = 'NOT DETECTED - No links were marked as suspicious.';
+                statusElement.style.color = '#ff3333';
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

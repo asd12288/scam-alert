@@ -1,26 +1,114 @@
 .sp-danger {
-  outline: 2px solid #ff3333 !important;
-  outline-offset: 2px !important;
+  outline: 3px solid #ff3333 !important;
+  outline-offset: 3px !important;
   position: relative;
+  box-shadow: 0 0 5px rgba(255, 51, 51, 0.5);
+  border-radius: 2px;
+  transition: all 0.2s ease-in-out;
+  animation: var(--sp-animation, sp-pulse 2s infinite);
 }
 
+.sp-danger:hover {
+  outline-width: 4px !important;
+  background-color: rgba(255, 51, 51, 0.05);
+}
+
+/* Tooltip warning message */
 .sp-danger::before {
-  content: "⚠️ Potential scam: low trust score";
+  content: attr(data-sp-warning, "⚠️ Potential scam: low trust score");
   position: absolute;
-  top: -30px;
+  top: -45px;
   left: 0;
   background-color: #ff3333;
   color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: var(--sp-warning-font-size, 16px);
+  font-weight: bold;
+  white-space: normal;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: opacity 0.3s, transform 0.2s;
   pointer-events: none;
   z-index: 10000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  transform: translateY(5px);
+  font-family: Arial, sans-serif;
+  letter-spacing: 0.2px;
+  max-width: 300px;
+  line-height: 1.4;
 }
 
 .sp-danger:hover::before {
   opacity: 1;
+  transform: translateY(0);
+}
+
+/* Add pulsing effect to make dangerous links more noticeable */
+@keyframes sp-pulse {
+  0% { outline-color: rgba(255, 51, 51, 1); }
+  50% { outline-color: rgba(255, 51, 51, 0.6); }
+  100% { outline-color: rgba(255, 51, 51, 1); }
+}
+
+/* High contrast mode for visually impaired users */
+@media (prefers-contrast: high), .sp-high-contrast {
+  .sp-danger {
+    outline: 5px solid #ff0000 !important;
+    background-color: #ffeeee !important;
+  }
+  
+  .sp-danger::before {
+    background-color: #000000;
+    color: #ffffff;
+    font-size: 18px;
+    border: 2px solid #ffffff;
+  }
+}
+
+/* Badge option for smaller links */
+.sp-danger-badge {
+  position: relative;
+}
+
+.sp-danger-badge::after {
+  content: "⚠️";
+  font-size: 16px;
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #ff3333;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* For reduced motion preference */
+@media (prefers-reduced-motion) {
+  .sp-danger {
+    animation: none;
+  }
+  
+  .sp-danger::before {
+    transition: opacity 0.1s linear;
+    transform: none;
+  }
+  
+  .sp-danger:hover::before {
+    transform: none;
+  }
+}
+
+/* Improve accessibility for large font sizes */
+@media (max-width: 768px) {
+  .sp-danger::before {
+    max-width: 250px;
+    white-space: normal;
+    top: -60px;
+  }
 }
