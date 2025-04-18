@@ -10,6 +10,7 @@ const scoreCache = new Map<string, { score: number; timestamp: number }>();
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutes in milliseconds
 const RISKY_THRESHOLD = 60; // Links with scores below 60 are marked as risky (aligned with app)
 const VERY_RISKY_THRESHOLD = 30; // Links with scores below 30 are considered very risky
+const BANNER_THRESHOLD = 40; // Show the safety banner for sites below this score
 
 // Accessibility settings - can later be made configurable via options page
 const ACCESSIBILITY = {
@@ -17,6 +18,15 @@ const ACCESSIBILITY = {
   highContrast: false,        // Force high contrast mode
   verboseWarnings: true,      // Use more descriptive warnings
   animationReduced: false,    // Reduce animations for users who prefer reduced motion
+};
+
+// Banner settings - these could be made configurable
+const BANNER_SETTINGS = {
+  enabled: true,              // Whether the banner is enabled
+  autoHide: false,            // Auto-hide after a certain time
+  autoHideDelay: 10000,       // Auto-hide delay in ms
+  showOnAllPages: false,      // Show on all pages or just homepage
+  alwaysShowScore: true,      // Always show score in banner
 };
 
 // Extract unique hostnames from all links on the page
@@ -87,6 +97,144 @@ function createRiskMeter(score: number): HTMLDivElement {
   riskMeter.appendChild(scoreValue);
 
   return riskMeter;
+}
+
+// Create a safety banner for the current page
+function createSafetyBanner(hostname: string, score: number): void {
+  // Check if banner should be shown based on settings and page type
+  if (!BANNER_SETTINGS.enabled) return;
+  
+  // Only show banner on homepage if setting is false
+  if (!BANNER_SETTINGS.showOnAllPages) {
+    // Check if we're on a subpage
+    const path = window.location.pathname;
+    if (path !== "/" && path !== "") return;
+  }
+  
+  // Check if a banner already exists and remove it
+  const existingBanner = document.querySelector('.sp-safety-banner');
+  if (existingBanner) {
+    existingBanner.remove();
+  }
+  
+  // Check current host against score threshold
+  if (score >= BANNER_THRESHOLD) return;
+
+  // Create the banner element
+  const banner = document.createElement('div');
+  banner.className = 'sp-safety-banner';
+  
+  // Add high or medium risk class based on score
+  if (score < VERY_RISKY_THRESHOLD) {
+    banner.classList.add('high-risk');
+  } else {
+    banner.classList.add('medium-risk');
+  }
+
+  // Set banner content
+  let warningLevel = score < VERY_RISKY_THRESHOLD ? "HIGH RISK" : "CAUTION";
+  let warningText = score < VERY_RISKY_THRESHOLD 
+    ? `This website (${hostname}) has been flagged as potentially unsafe with a very low security score.`
+    : `This website (${hostname}) has a low security score and might be risky to use.`;
+
+  banner.innerHTML = `
+    <div class="sp-safety-banner-content">
+      <span class="sp-safety-banner-warning-icon">⚠️</span>
+      <span class="sp-safety-banner-text">
+        <strong>${warningLevel}:</strong> ${warningText}
+      </span>
+      ${BANNER_SETTINGS.alwaysShowScore ? 
+        `<div class="sp-safety-banner-score">
+          Score: <span class="sp-safety-banner-score-value">${score}</span>
+        </div>` : ''
+      }
+      <button class="sp-safety-banner-action" id="sp-check-site">Check Details</button>
+    </div>
+    <button class="sp-safety-banner-close" id="sp-close-banner">×</button>
+  `;
+
+  // Add the banner to the page
+  document.body.appendChild(banner);
+  
+  // Show the banner (with animation)
+  setTimeout(() => {
+    banner.classList.add('show');
+  }, 500);
+  
+  // Add event listeners
+  const closeButton = document.getElementById('sp-close-banner');
+  if (closeButton) {
+    closeButton.addEventListener('click', () => {
+      banner.classList.remove('show');
+      setTimeout(() => {
+        banner.remove();
+      }, 300);
+      
+      // Store that this banner was dismissed for this domain
+      try {
+        const dismissedBanners = JSON.parse(localStorage.getItem('sp-dismissed-banners') || '{}');
+        dismissedBanners[hostname] = Date.now();
+        localStorage.setItem('sp-dismissed-banners', JSON.stringify(dismissedBanners));
+      } catch (e) {
+        console.error('Failed to store banner dismissal:', e);
+      }
+    });
+  }
+  
+  // Add check site button handler
+  const checkSiteButton = document.getElementById('sp-check-site');
+  if (checkSiteButton) {
+    checkSiteButton.addEventListener('click', () => {
+      // Open the domain check in a new tab
+      window.open(`https://scam-protector.com?domain=${encodeURIComponent(hostname)}`, '_blank');
+    });
+  }
+  
+  // Auto-hide if enabled
+  if (BANNER_SETTINGS.autoHide) {
+    setTimeout(() => {
+      if (banner.parentElement) {
+        banner.classList.remove('show');
+        setTimeout(() => {
+          banner.remove();
+        }, 300);
+      }
+    }, BANNER_SETTINGS.autoHideDelay);
+  }
+}
+
+// Check the current page's safety
+async function checkCurrentPage(): Promise<void> {
+  const currentHostname = window.location.hostname;
+  
+  if (!currentHostname) return;
+  
+  // Check if we've recently dismissed a banner for this domain
+  try {
+    const dismissedBanners = JSON.parse(localStorage.getItem('sp-dismissed-banners') || '{}');
+    const lastDismissed = dismissedBanners[currentHostname];
+    
+    // If dismissed less than 1 hour ago, don't show again
+    if (lastDismissed && (Date.now() - lastDismissed < 60 * 60 * 1000)) {
+      console.debug(`[Scam-Protector] Banner for ${currentHostname} was recently dismissed, not showing again.`);
+      return;
+    }
+  } catch (e) {
+    // Ignore storage errors
+  }
+  
+  try {
+    // Get score for current page
+    const scores = await getScoresForHosts([currentHostname]);
+    const score = scores[currentHostname];
+    
+    if (score !== undefined && score < BANNER_THRESHOLD) {
+      console.debug(`[Scam-Protector] Creating safety banner for ${currentHostname} with score ${score}`);
+      createSafetyBanner(currentHostname, score);
+    }
+  } catch (error) {
+    console.error(`[Scam-Protector] Error checking current page safety:`, error);
+  }
 }
 
 // Clear the extension's cache (for debugging)
@@ -272,6 +420,16 @@ async function scanPage(): Promise<void> {
 
   const scoreMap = await getScoresForHosts(hostnames);
   markRiskyLinks(scoreMap);
+  
+  // If the current page hostname is in our scored hostnames, check if we need a banner
+  const currentHostname = window.location.hostname;
+  if (currentHostname && scoreMap[currentHostname] !== undefined) {
+    const score = scoreMap[currentHostname];
+    if (score < BANNER_THRESHOLD) {
+      console.debug(`[Scam-Protector] Current page (${currentHostname}) has low score: ${score}`);
+      createSafetyBanner(currentHostname, score);
+    }
+  }
 }
 
 // Throttle function to avoid performance issues
@@ -370,6 +528,9 @@ document.addEventListener("DOMContentLoaded", () => {
   loadAccessibilitySettings().then(() => {
     scanPage();
     observeDOMChanges();
+    
+    // Check the current page's safety
+    setTimeout(checkCurrentPage, 1000);
     
     // Add debug controls if in test/dev environment
     setTimeout(addDebugControls, 1000);
