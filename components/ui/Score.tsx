@@ -70,11 +70,12 @@ const getScoreInfo = (score: number) => {
 
 interface ScoreProps {
   score: number | undefined | null;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
   showLabel?: boolean;
   showDescription?: boolean;
   className?: string;
-  variant?: "circle" | "badge";
+  variant?: "circle" | "badge" | "compact";
+  animate?: boolean;
 }
 
 const Score: React.FC<ScoreProps> = ({
@@ -84,6 +85,7 @@ const Score: React.FC<ScoreProps> = ({
   showDescription = true,
   className = "",
   variant = "circle",
+  animate = true,
 }) => {
   // Handle undefined, null, NaN or non-numeric values
   const numericScore = typeof score === "number" && !isNaN(score) ? score : 0;
@@ -98,31 +100,52 @@ const Score: React.FC<ScoreProps> = ({
     borderColor,
   } = getScoreInfo(clampedScore);
 
-  // Size variants
+  // Size variants with responsive adjustments
   const sizeClasses = {
-    sm: {
-      wrapper: "w-14 h-14",
-      scoreText: "text-base",
-      labelText: "text-xs",
-      descriptionText: "text-xs",
+    xs: {
+      wrapper: "w-10 h-10 sm:w-12 sm:h-12",
+      scoreText: "text-xs sm:text-sm",
+      labelText: "text-[10px] sm:text-xs",
+      descriptionText: "text-xs hidden sm:block",
       thickness: 3,
-      badgeSize: "text-base px-3 py-1.5", // Increased from text-sm
+      badgeSize: "text-xs sm:text-sm px-2 py-1",
+      compactSize: "text-xs px-1.5 py-0.5",
+    },
+    sm: {
+      wrapper: "w-14 h-14 sm:w-16 sm:h-16",
+      scoreText: "text-sm sm:text-base",
+      labelText: "text-xs",
+      descriptionText: "text-xs sm:text-sm",
+      thickness: 3,
+      badgeSize: "text-sm sm:text-base px-2.5 py-1.5",
+      compactSize: "text-sm px-2 py-1",
     },
     md: {
-      wrapper: "w-24 h-24",
-      scoreText: "text-2xl",
-      labelText: "text-sm",
-      descriptionText: "text-xs",
+      wrapper: "w-20 h-20 sm:w-24 sm:h-24",
+      scoreText: "text-xl sm:text-2xl",
+      labelText: "text-xs sm:text-sm",
+      descriptionText: "text-xs sm:text-sm",
       thickness: 4,
-      badgeSize: "text-xl px-4 py-2", // Increased badge size
+      badgeSize: "text-lg sm:text-xl px-3 py-1.5 sm:px-4 sm:py-2",
+      compactSize: "text-base sm:text-lg px-2.5 py-1 sm:px-3",
     },
     lg: {
-      wrapper: "w-32 h-32",
-      scoreText: "text-3xl",
-      labelText: "text-base",
+      wrapper: "w-28 h-28 sm:w-32 sm:h-32",
+      scoreText: "text-2xl sm:text-3xl",
+      labelText: "text-sm sm:text-base",
       descriptionText: "text-sm",
       thickness: 5,
-      badgeSize: "text-2xl px-5 py-2.5", // Increased for larger display
+      badgeSize: "text-xl sm:text-2xl px-4 py-2 sm:px-5 sm:py-2.5",
+      compactSize: "text-lg sm:text-xl px-3 py-1.5",
+    },
+    xl: {
+      wrapper: "w-36 h-36 sm:w-40 sm:h-40",
+      scoreText: "text-3xl sm:text-4xl",
+      labelText: "text-base sm:text-lg",
+      descriptionText: "text-sm sm:text-base",
+      thickness: 6,
+      badgeSize: "text-2xl sm:text-3xl px-5 py-2.5 sm:px-6 sm:py-3",
+      compactSize: "text-xl sm:text-2xl px-4 py-2",
     },
   };
 
@@ -133,6 +156,7 @@ const Score: React.FC<ScoreProps> = ({
     descriptionText,
     thickness,
     badgeSize,
+    compactSize,
   } = sizeClasses[size];
 
   // Calculate SVG parameters for circle
@@ -140,29 +164,55 @@ const Score: React.FC<ScoreProps> = ({
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (clampedScore / 100) * circumference;
 
+  // For the compact variant (useful in mobile layouts or tight spaces)
+  if (variant === "compact") {
+    return (
+      <div className={`inline-flex items-center ${className}`}>
+        <div
+          className={`rounded-full ${bgColor} ${borderColor} border ${compactSize} font-semibold inline-flex items-center justify-center ${textColor}`}
+          aria-label={`Score: ${clampedScore} out of 100 (${label})`}
+        >
+          {clampedScore}
+        </div>
+        {showLabel && (
+          <span className={`ml-1.5 font-medium ${textColor} ${labelText}`}>
+            {label}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  // Badge variant
   if (variant === "badge") {
     return (
       <div className={`flex flex-col items-center ${className}`}>
         <div
           className={`rounded-full ${bgColor} ${borderColor} border ${badgeSize} font-bold flex items-center justify-center ${textColor}`}
+          aria-label={`Score: ${clampedScore} out of 100`}
         >
           <span className="mr-1">{clampedScore}</span>
-          {showLabel && (
-            <span className="text-xs sm:text-sm font-medium">/ 100</span>
-          )}
+          <span className="text-xs sm:text-sm font-medium">/ 100</span>
         </div>
+
+        {showLabel && (
+          <div className={`mt-1 ${textColor} font-medium ${labelText}`}>
+            {label}
+          </div>
+        )}
 
         {showDescription && (
           <p
             className={`mt-1 text-center text-gray-600 max-w-xs ${descriptionText}`}
           >
-            {label}
+            {description}
           </p>
         )}
       </div>
     );
   }
 
+  // Default circle variant
   return (
     <div className={`flex flex-col items-center ${className}`}>
       {/* SVG Circle Progress */}
@@ -170,6 +220,7 @@ const Score: React.FC<ScoreProps> = ({
         <svg
           className="w-full h-full transform -rotate-90"
           viewBox="0 0 100 100"
+          aria-label={`Score: ${clampedScore} out of 100`}
         >
           {/* Background circle */}
           <circle
@@ -192,7 +243,7 @@ const Score: React.FC<ScoreProps> = ({
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
-            className={`transition-all duration-1000 ease-out bg-gradient-to-r ${gradient}`}
+            className={`${animate ? 'transition-all duration-1000 ease-out' : ''} bg-gradient-to-r ${gradient}`}
           />
         </svg>
 
@@ -202,7 +253,7 @@ const Score: React.FC<ScoreProps> = ({
             {clampedScore}
           </span>
           {showLabel && (
-            <span className={`font-medium ${labelText}`} style={{ color }}>
+            <span className={`font-medium ${labelText} text-center`} style={{ color }}>
               {label}
             </span>
           )}
