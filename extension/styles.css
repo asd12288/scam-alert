@@ -43,6 +43,72 @@
   transform: translateY(0);
 }
 
+/* New visual risk meter */
+.sp-risk-meter {
+  position: absolute;
+  height: 4px;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  background-color: #f0f0f0;
+  border-radius: 2px;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 9999;
+}
+
+.sp-danger:hover .sp-risk-meter {
+  opacity: 1;
+}
+
+.sp-risk-meter-fill {
+  height: 100%;
+  width: var(--risk-level, 50%);
+  transition: width 0.5s ease-in-out;
+  border-radius: 2px;
+  background: linear-gradient(90deg, 
+    #02c39a 0%, 
+    #8ac926 30%, 
+    #ffca3a 50%, 
+    #ff924c 70%, 
+    #ff595e 100%
+  );
+}
+
+.sp-risk-meter-marker {
+  position: absolute;
+  width: 3px;
+  height: 8px;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 1px;
+  transform: translateX(-50%);
+  z-index: 10000;
+}
+
+.sp-risk-meter-value {
+  position: absolute;
+  font-size: 11px;
+  font-weight: bold;
+  color: #fff;
+  background-color: #333;
+  padding: 2px 6px;
+  border-radius: 10px;
+  bottom: 8px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 10001;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.sp-risk-meter:hover .sp-risk-meter-value {
+  opacity: 1;
+}
+
 /* Add pulsing effect to make dangerous links more noticeable */
 @keyframes sp-pulse {
   0% { outline-color: rgba(255, 51, 51, 1); }
@@ -101,6 +167,10 @@
   
   .sp-danger:hover::before {
     transform: none;
+  }
+  
+  .sp-risk-meter-fill {
+    transition: none;
   }
 }
 

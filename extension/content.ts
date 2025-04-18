@@ -55,6 +55,40 @@ function getWarningText(score: number): string {
   }
 }
 
+// Create a visual risk meter element
+function createRiskMeter(score: number): HTMLDivElement {
+  // Convert score to a risk percentage (0-100)
+  // Where 100 score = 0% risk, 0 score = 100% risk
+  const riskPercentage = 100 - score;
+
+  // Create the risk meter container
+  const riskMeter = document.createElement('div');
+  riskMeter.className = 'sp-risk-meter';
+
+  // Create the fill element that shows the risk level
+  const riskFill = document.createElement('div');
+  riskFill.className = 'sp-risk-meter-fill';
+  riskFill.style.setProperty('--risk-level', `${riskPercentage}%`);
+
+  // Create a marker at the 60% threshold (corresponds to our RISKY_THRESHOLD)
+  const thresholdMarker = document.createElement('div');
+  thresholdMarker.className = 'sp-risk-meter-marker';
+  thresholdMarker.style.left = '40%'; // 100 - RISKY_THRESHOLD
+
+  // Create a score value indicator
+  const scoreValue = document.createElement('div');
+  scoreValue.className = 'sp-risk-meter-value';
+  scoreValue.textContent = `Score: ${score}/100`;
+  scoreValue.style.left = `${100 - riskPercentage}%`;
+
+  // Assemble the risk meter
+  riskMeter.appendChild(riskFill);
+  riskMeter.appendChild(thresholdMarker);
+  riskMeter.appendChild(scoreValue);
+
+  return riskMeter;
+}
+
 // Clear the extension's cache (for debugging)
 async function clearScoresCache(): Promise<void> {
   try {
@@ -159,8 +193,15 @@ function markRiskyLinks(scoreMap: HostScoreMap): void {
             const warningText = getWarningText(score);
             link.setAttribute("data-sp-warning", warningText);
 
+            // Store the actual score as a data attribute for debugging
+            link.setAttribute("data-sp-score", score.toString());
+
             // Add aria attributes for screen readers
             link.setAttribute("aria-description", warningText);
+
+            // Add the visual risk meter
+            const riskMeter = createRiskMeter(score);
+            link.appendChild(riskMeter);
 
             // For very risky sites, add an additional visual indicator
             if (score < VERY_RISKY_THRESHOLD) {
