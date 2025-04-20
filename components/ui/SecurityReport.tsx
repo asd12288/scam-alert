@@ -15,6 +15,12 @@ import {
   ThumbsDown,
   Info,
   HelpCircle,
+  Share2,
+  Facebook,
+  Twitter as XIcon,
+  Linkedin,
+  Instagram,
+  Link as LinkIcon,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -75,6 +81,8 @@ const SecurityReport: React.FC<SecurityReportProps> = ({
   const [showDetails, setShowDetails] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showShareOptions, setShowShareOptions] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   // Extract data safely
   const domain = data?.domain || "Unknown domain";
@@ -192,6 +200,50 @@ const SecurityReport: React.FC<SecurityReportProps> = ({
     return lines[0] || "";
   };
 
+  // Sharing functionality
+  const getShareUrl = () => {
+    // Create a URL with the domain as a parameter
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    return `${baseUrl}/?domain=${encodeURIComponent(domain)}`;
+  };
+
+  const getShareTitle = () => {
+    return `Security Report for ${domain}: ${riskLevel} (Score: ${score}/100)`;
+  };
+
+  const getShareDescription = () => {
+    return `I just checked ${domain} using Scam Protector and found it's rated as "${riskLevel}" with a security score of ${score}/100. Check it yourself!`;
+  };
+
+  const shareToFacebook = () => {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getShareUrl())}`;
+    window.open(url, '_blank', 'width=600,height=400');
+  };
+
+  const shareToTwitter = () => {
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(getShareDescription())}&url=${encodeURIComponent(getShareUrl())}`;
+    window.open(url, '_blank', 'width=600,height=400');
+  };
+
+  const shareToLinkedin = () => {
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(getShareUrl())}`;
+    window.open(url, '_blank', 'width=600,height=400');
+  };
+
+  const shareToInstagram = () => {
+    // Instagram doesn't have a direct web sharing API like the others
+    // Usually for Instagram, we'd advise users to take a screenshot and share manually
+    // For now, we'll copy the link to clipboard and show instructions
+    navigator.clipboard.writeText(getShareUrl());
+    alert("Link copied! Open Instagram and paste it in a message or post.");
+  };
+
+  const copyShareLink = () => {
+    navigator.clipboard.writeText(getShareUrl());
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
+
   return (
     <div
       id="security-report"
@@ -200,54 +252,113 @@ const SecurityReport: React.FC<SecurityReportProps> = ({
       {/* Header with website info and risk level - Bigger design */}
       <div
         id="report-header"
-        className={`px-5 py-5 ${colors.bgHeader} border-b ${colors.border} flex justify-between items-center gap-4`}
+        className={`px-5 py-5 ${colors.bgHeader} border-b ${colors.border} flex flex-col justify-between gap-3`}
       >
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="flex-shrink-0">
-            {React.cloneElement(colors.icon, { className: "w-8 h-8" })}
-          </div>
-          <div className="overflow-hidden">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-lg font-bold text-gray-900 truncate max-w-[220px] sm:max-w-xs">
-                {domain}
-              </h2>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={copyDomain}
-                  className="text-gray-500 hover:text-gray-700"
-                  title="Copy website address"
-                >
-                  {copied ? (
-                    <CheckCircle size={18} className="text-green-500" />
-                  ) : (
-                    <Copy size={18} />
-                  )}
-                </button>
-                <a
-                  href={`https://${domain}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 flex items-center text-sm"
-                  title="Visit website (opens in new window)"
-                >
-                  <ExternalLink size={16} className="mr-1" />
-                  Visit
-                </a>
-              </div>
+        <div className="flex justify-between items-center gap-4">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="flex-shrink-0">
+              {React.cloneElement(colors.icon, { className: "w-8 h-8" })}
             </div>
-            <p className={`text-base font-medium mt-1 ${colors.text}`}>
-              <span>This website appears to be: {riskLevel}</span>
-            </p>
+            <div className="overflow-hidden">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-lg font-bold text-gray-900 truncate max-w-[220px] sm:max-w-xs">
+                  {domain}
+                </h2>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={copyDomain}
+                    className="text-gray-500 hover:text-gray-700"
+                    title="Copy website address"
+                  >
+                    {copied ? (
+                      <CheckCircle size={18} className="text-green-500" />
+                    ) : (
+                      <Copy size={18} />
+                    )}
+                  </button>
+                  <a
+                    href={`https://${domain}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 flex items-center text-sm"
+                    title="Visit website (opens in new window)"
+                  >
+                    <ExternalLink size={16} className="mr-1" />
+                    Visit
+                  </a>
+                </div>
+              </div>
+              <p className={`text-base font-medium mt-1 ${colors.text}`}>
+                <span>This website appears to be: {riskLevel}</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex-shrink-0">
+            <Score
+              score={score}
+              size="md"
+              showDescription={false}
+              variant="badge"
+            />
           </div>
         </div>
 
-        <div className="flex-shrink-0">
-          <Score
-            score={score}
-            size="md"
-            showDescription={false}
-            variant="badge"
-          />
+        {/* Enhanced Share Section in Header */}
+        <div className="w-full">
+          <div className="bg-white bg-opacity-75 rounded-lg py-2 px-3 shadow-sm border border-gray-200 flex items-center justify-between">
+            <div className="flex items-center">
+              <Share2 className="w-4 h-4 text-blue-600 mr-2" />
+              <span className="text-sm font-medium text-gray-700">Help others stay safe:</span>
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={shareToFacebook}
+                className="bg-[#1877F2] text-white p-2 rounded-full flex items-center justify-center hover:bg-opacity-80 transition-colors w-8 h-8"
+                aria-label="Share on Facebook"
+                title="Share on Facebook"
+              >
+                <Facebook size={16} />
+              </button>
+              <button
+                onClick={shareToTwitter}
+                className="bg-[#000000] text-white p-2 rounded-full flex items-center justify-center hover:bg-opacity-80 transition-colors w-8 h-8"
+                aria-label="Share on X"
+                title="Share on X"
+              >
+                <XIcon size={16} />
+              </button>
+              <button
+                onClick={shareToLinkedin}
+                className="bg-[#0077B5] text-white p-2 rounded-full flex items-center justify-center hover:bg-opacity-80 transition-colors w-8 h-8"
+                aria-label="Share on LinkedIn"
+                title="Share on LinkedIn"
+              >
+                <Linkedin size={16} />
+              </button>
+              <button
+                onClick={shareToInstagram}
+                className="bg-[#E4405F] text-white p-2 rounded-full flex items-center justify-center hover:bg-opacity-80 transition-colors w-8 h-8"
+                aria-label="Share on Instagram"
+                title="Share on Instagram"
+              >
+                <Instagram size={16} />
+              </button>
+              <button
+                onClick={copyShareLink}
+                className="bg-gray-200 text-gray-700 p-2 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors w-8 h-8 relative"
+                aria-label="Copy link"
+                title="Copy link to clipboard"
+              >
+                <LinkIcon size={16} />
+                {linkCopied && (
+                  <span className="absolute bg-black text-white text-xs py-1 px-2 rounded -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                    Link copied!
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
