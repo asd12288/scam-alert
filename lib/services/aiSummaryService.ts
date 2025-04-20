@@ -332,7 +332,7 @@ export async function generateAISummary(data: SecurityData): Promise<string> {
     const prompt = createSecurityPrompt(data);
 
     const response = await openai.chat.completions.create({
-      model: process.env.OPENAI_MODEL || "gpt-4",
+      model: "gpt-4-mini",
       messages: [
         {
           role: "system",

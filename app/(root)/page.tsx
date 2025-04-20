@@ -2,7 +2,7 @@
 
 import InputScam from "@/components/InputScamForm";
 import React, { useState, useEffect } from "react";
-import { Shield, Download } from "lucide-react";
+import { Shield, Download, Bell } from "lucide-react";
 import { JsonLd } from "react-schemaorg";
 import Link from "next/link";
 
@@ -45,6 +45,15 @@ const Page = () => {
             "Advanced tool to detect online scams, phishing attempts, and fraudulent websites in real-time.",
         }}
       />
+      
+      {/* Extension Coming Soon Banner */}
+      <div className="bg-blue-600 text-white py-2 px-4 flex items-center justify-center">
+        <Bell className="w-4 h-4 mr-2 animate-pulse" />
+        <span className="text-sm">Browser extension coming soon!</span>
+        <Link href="/extension" className="ml-2 text-sm text-blue-200 hover:text-white hover:underline flex items-center">
+          Learn more <span className="ml-1">→</span>
+        </Link>
+      </div>
 
       <main
         className={`${
@@ -64,14 +73,6 @@ const Page = () => {
               Using advanced technology to detect and protect you from
               sophisticated online scams.
             </p>
-            <div className="mt-3">
-              <Link 
-                href="/extension" 
-                className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 hover:underline"
-              >
-                <Download className="w-4 h-4 mr-1" /> Get our browser extension
-              </Link>
-            </div>
           </div>
 
           {/* Main search form - centered with proper width constraints */}

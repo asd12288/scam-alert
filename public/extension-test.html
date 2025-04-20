@@ -63,58 +63,6 @@
       button:hover {
         background-color: #0063b1;
       }
-      .feature-check {
-        display: flex;
-        align-items: center;
-        margin: 5px 0;
-      }
-      .feature-check .indicator {
-        width: 15px;
-        height: 15px;
-        border-radius: 50%;
-        background-color: #ccc;
-        margin-right: 10px;
-      }
-      .feature-check.detected .indicator {
-        background-color: #00a651;
-      }
-      .debug-tools {
-        margin-top: 20px;
-        padding: 15px;
-        background-color: #fff4e5;
-        border-left: 4px solid #ff9800;
-        border-radius: 5px;
-      }
-      .debug-panel {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 10px;
-        margin-top: 10px;
-      }
-      .visual-demo {
-        margin-top: 20px;
-        padding: 15px;
-        border: 1px dashed #ccc;
-        border-radius: 5px;
-        background-color: white;
-      }
-      .demo-banner {
-        background-color: #ffebee;
-        border-left: 4px solid #f44336;
-        padding: 10px;
-        margin-top: 10px;
-        border-radius: 4px;
-      }
-      #extension-details {
-        font-family: monospace;
-        white-space: pre-wrap;
-        background: #f5f5f5;
-        padding: 10px;
-        max-height: 200px;
-        overflow: auto;
-        margin-top: 10px;
-        font-size: 0.8em;
-      }
     </style>
   </head>
   <body>
@@ -123,14 +71,12 @@
     <div class="instructions">
       <h3>How to Use This Test Page</h3>
       <p>
-        This page tests if your Scam-Protector extension is working correctly with all visual elements. If properly installed, the extension should:
+        This page contains various types of links to test if your Scam-Protector
+        extension is working correctly. Links to domains that include "scam" or
+        "phish" should be marked with a red outline and display a warning
+        tooltip on hover.
       </p>
-      <ol>
-        <li>Mark suspicious links with warning indicators</li>
-        <li>Show risk meters on dangerous links</li>
-        <li>Display a safety banner if this page is considered risky</li>
-      </ol>
-      <p>Note: Make sure the extension is properly installed and enabled. If you don't see any visual elements, check the debugging section below.</p>
+      <p>Note: Make sure the extension is properly installed before testing.</p>
     </div>
 
     <div class="test-section">
@@ -177,42 +123,6 @@
     </div>
 
     <div class="test-section">
-      <h2>Visual Elements Test</h2>
-      <p>This section checks if all the new visual elements are working:</p>
-      
-      <div id="features-check">
-        <div class="feature-check" id="basic-highlighting">
-          <div class="indicator"></div>
-          <span>Basic Link Highlighting</span>
-        </div>
-        <div class="feature-check" id="risk-meter">
-          <div class="indicator"></div>
-          <span>Visual Risk Meter</span>
-        </div>
-        <div class="feature-check" id="warning-tooltip">
-          <div class="indicator"></div>
-          <span>Warning Tooltips</span>
-        </div>
-        <div class="feature-check" id="safety-banner">
-          <div class="indicator"></div>
-          <span>Safety Banner</span>
-        </div>
-        <div class="feature-check" id="css-loaded">
-          <div class="indicator"></div>
-          <span>CSS Styles Loaded</span>
-        </div>
-      </div>
-      
-      <div class="visual-demo">
-        <h4>Expected Visual Elements:</h4>
-        <p>When working correctly, suspicious links should have:</p>
-        <div class="demo-banner">
-          Example: Link with red outline/background + risk meter + warning on hover
-        </div>
-      </div>
-    </div>
-
-    <div class="test-section">
       <h2>Dynamic Link Test</h2>
       <p>
         This section tests the extension's ability to detect dynamically added
@@ -223,20 +133,6 @@
         <button id="add-suspicious-link">Add Suspicious Link</button>
       </div>
       <div id="dynamic-links"></div>
-    </div>
-
-    <div class="debug-tools">
-      <h2>Extension Debugging</h2>
-      <p>Use these tools to troubleshoot if the extension isn't working correctly:</p>
-      
-      <div class="debug-panel">
-        <button id="check-extension">Check Extension</button>
-        <button id="force-scan">Force Re-scan</button>
-        <button id="clear-cache">Clear Cache</button>
-        <button id="show-styles">Check CSS</button>
-      </div>
-      
-      <div id="extension-details"></div>
     </div>
 
     <div class="status">
@@ -271,169 +167,23 @@
           container.appendChild(linkDiv);
         });
 
-      // Check if extension is active and detect its features
-      function checkExtensionFeatures() {
+      // Check if extension is active
+      setTimeout(() => {
+        // Look for any links that have the sp-danger class
+        const markedLinks = document.querySelectorAll(".sp-danger");
         const statusElement = document.getElementById("extension-status");
-        
-        // Check for each feature
-        setTimeout(() => {
-          // 1. Basic link highlighting
-          const markedLinks = document.querySelectorAll(".sp-danger");
-          if (markedLinks.length > 0) {
-            document.getElementById("basic-highlighting").classList.add("detected");
-          }
-          
-          // 2. Risk meters
-          const riskMeters = document.querySelectorAll(".sp-risk-meter");
-          if (riskMeters.length > 0) {
-            document.getElementById("risk-meter").classList.add("detected");
-          }
-          
-          // 3. Warning tooltips
-          const hasWarnings = Array.from(document.querySelectorAll("a[data-sp-warning]")).length > 0;
-          if (hasWarnings) {
-            document.getElementById("warning-tooltip").classList.add("detected");
-          }
-          
-          // 4. Safety banner
-          const banner = document.querySelector(".sp-safety-banner");
-          if (banner) {
-            document.getElementById("safety-banner").classList.add("detected");
-          }
-          
-          // 5. Detect if CSS is loaded
-          const cssLoaded = getComputedStyle(document.querySelector('.sp-danger') || document.createElement('div')).getPropertyValue('--sp-warning-font-size') !== '';
-          if (cssLoaded || document.querySelector('.sp-danger')) {
-            document.getElementById("css-loaded").classList.add("detected");
-          }
-          
-          // Overall status
-          const detectedFeatures = document.querySelectorAll(".feature-check.detected").length;
-          
-          if (detectedFeatures > 0) {
-            statusElement.textContent = `ACTIVE - ${detectedFeatures}/5 features detected`;
-            statusElement.style.color = detectedFeatures >= 3 ? "#00a651" : "#ff9800";
-          } else {
-            statusElement.textContent = "NOT DETECTED - Extension not working or not installed";
-            statusElement.style.color = "#ff3333";
-          }
-        }, 3000);
-      }
-      
-      // Initialize feature checking
-      checkExtensionFeatures();
-      
-      // Debug tools functionality
-      document.getElementById("check-extension").addEventListener("click", function() {
-        const details = document.getElementById("extension-details");
-        details.textContent = "Checking extension status...";
-        
-        // Check if extension is available
-        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
-          try {
-            chrome.runtime.sendMessage({action: "ping"}, function(response) {
-              if (chrome.runtime.lastError) {
-                details.textContent = `Extension Error: ${chrome.runtime.lastError.message}`;
-              } else {
-                details.textContent = `Extension is available. Response: ${JSON.stringify(response || "No response")}`;
-              }
-            });
-          } catch (e) {
-            details.textContent = `Error communicating with extension: ${e.message}`;
-          }
+
+        if (markedLinks.length > 0) {
+          statusElement.textContent =
+            "ACTIVE - Extension is working! Suspicious links are being marked.";
+          statusElement.style.color = "#00a651";
         } else {
-          details.textContent = "Chrome extension API not available. Extension may not be installed.";
+          // If no links are marked after 3 seconds, assume extension might not be working
+          statusElement.textContent =
+            "NOT DETECTED - No links were marked as suspicious.";
+          statusElement.style.color = "#ff3333";
         }
-      });
-      
-      document.getElementById("force-scan").addEventListener("click", function() {
-        const details = document.getElementById("extension-details");
-        details.textContent = "Triggering page rescan...";
-        
-        // Dispatch a custom event that the content script can listen for
-        document.dispatchEvent(new CustomEvent('sp-force-scan'));
-        
-        // Also try direct message to background script
-        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
-          chrome.runtime.sendMessage({action: "forceScan"});
-        }
-        
-        // Recheck features after a delay
-        setTimeout(checkExtensionFeatures, 1000);
-        
-        details.textContent += "\nRescan requested. Checking for updates...";
-      });
-      
-      document.getElementById("clear-cache").addEventListener("click", function() {
-        const details = document.getElementById("extension-details");
-        details.textContent = "Clearing extension cache...";
-        
-        // Try direct message to background script
-        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
-          chrome.runtime.sendMessage({action: "getScores", clearCache: true}, function(response) {
-            details.textContent = `Cache clear request sent. Response: ${JSON.stringify(response || "No response")}`;
-            
-            // Force rescan after cache clear
-            setTimeout(() => {
-              chrome.runtime.sendMessage({action: "forceScan"});
-              details.textContent += "\nTriggering rescan after cache clear...";
-            }, 500);
-          });
-        } else {
-          details.textContent = "Cannot clear cache - extension API not available";
-        }
-      });
-      
-      document.getElementById("show-styles").addEventListener("click", function() {
-        const details = document.getElementById("extension-details");
-        
-        // Check for extension CSS
-        const extensionStyles = Array.from(document.styleSheets).filter(sheet => {
-          try {
-            // Extension styles often contain specific class names
-            const rules = Array.from(sheet.cssRules);
-            return rules.some(rule => 
-              rule.selectorText && (
-                rule.selectorText.includes('.sp-danger') || 
-                rule.selectorText.includes('.sp-risk-meter') ||
-                rule.selectorText.includes('.sp-safety-banner')
-              )
-            );
-          } catch (e) {
-            // CORS may prevent access to stylesheets from other origins
-            return false;
-          }
-        });
-        
-        if (extensionStyles.length > 0) {
-          details.textContent = `Extension CSS detected! Found ${extensionStyles.length} style sheets.`;
-        } else {
-          details.textContent = "Extension CSS not detected. This could be why visual elements aren't showing.";
-          
-          // Suggestion for fixing
-          details.textContent += "\n\nPossible solutions:\n";
-          details.textContent += "1. Check if extension styles.css is being injected\n";
-          details.textContent += "2. Make sure manifest.json includes content_scripts with CSS\n";
-          details.textContent += "3. Try reinstalling the extension";
-        }
-      });
-      
-      // Add the ability to simulate risky domain for banner testing
-      function simulateRiskyDomain() {
-        // Create an element with special data to be detected by the extension
-        const simulateBanner = document.createElement('div');
-        simulateBanner.id = 'sp-simulate-risky-domain';
-        simulateBanner.style.display = 'none';
-        document.body.appendChild(simulateBanner);
-        
-        // Dispatch an event to notify extension
-        document.dispatchEvent(new CustomEvent('sp-simulate-risky', {
-          detail: { hostname: 'extension-test.example.com', score: 25 }
-        }));
-      }
-      
-      // Auto-run the simulation after page load
-      setTimeout(simulateRiskyDomain, 2000);
+      }, 3000);
     </script>
   </body>
 </html>

@@ -11,7 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   //   priority: 0.7,
   // }));
 
-  const baseUrl = "https://scamprotector.com";
+  const baseUrl = "https://scam-protector.com";
   const currentDate = new Date();
 
   // Add your static routes

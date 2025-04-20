@@ -78,57 +78,6 @@ const InputScam = ({ onResultsChange }: InputScamProps) => {
       cleanDomain = cleanDomain.replace(/^(https?:\/\/)?(www\.)?/i, "");
       cleanDomain = cleanDomain.split("/")[0]; // Remove any paths
 
-      // Special case for our own domain - Easter egg
-      if (cleanDomain.toLowerCase() === "scam-protector.com") {
-        // Simulate loading for a short time for effect
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        setScore(100);
-        setDomainData({
-          domain: cleanDomain,
-          aiSummary: "This is the official Scam Protector website - the safest place on the internet! You've found our home, and we're delighted to see you here. Our own website gets a perfect 100 score (of course!). We work tirelessly to protect users from online scams, and what better way to demonstrate our commitment than by ensuring our own house is perfectly secure?",
-          details: {
-            domain: {
-              registrationDate: "2023-01-01",
-              expiryDate: "2100-01-01", // Future expiry (just for fun)
-              registrar: "Scam Protector Registry",
-              ageInDays: 365 * 2,
-            },
-            security: {
-              ssl: true,
-              httpsRedirect: true,
-              securityHeaders: true,
-            },
-            content: {
-              language: "English",
-              technologies: ["Next.js", "TypeScript", "AI Security Analysis"],
-              suspiciousContent: false,
-            },
-            easterEgg: true,  // Special flag for our custom response
-          },
-          screenshot: "/easter-egg-shield.png", // Path to our easter egg image
-        });
-
-        // Scroll to results after a short delay
-        setTimeout(() => {
-          const reportHeader = document.getElementById("report-header");
-          if (reportHeader) {
-            const paddingTop = 20;
-            const headerPosition =
-              reportHeader.getBoundingClientRect().top +
-              window.pageYOffset -
-              paddingTop;
-            window.scrollTo({
-              top: headerPosition,
-              behavior: "smooth",
-            });
-          }
-        }, 300);
-
-        setLoading(false);
-        return;
-      }
-
       const response = await fetch("/api/domain-security", {
         method: "POST",
         headers: {

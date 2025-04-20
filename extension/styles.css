@@ -1,162 +1,133 @@
-/* Minimalist Extension Design - Base Styles */
-
-/* Reset default margins for consistent behavior */
 .sp-danger {
+  outline: 3px solid #ff3333 !important;
+  outline-offset: 3px !important;
   position: relative;
-  z-index: 5;
-  margin-bottom: 16px; /* Space for the risk meter */
-  text-decoration: inherit; /* Maintain original link styling */
-  transition: all 0.2s ease;
-  border-radius: 4px;
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-  padding: 0 2px;
+  box-shadow: 0 0 5px rgba(255, 51, 51, 0.5);
+  border-radius: 2px;
+  transition: all 0.2s ease-in-out;
+  animation: var(--sp-animation, sp-pulse 2s infinite);
 }
 
-/* Removed the vertical indicator and replaced with full outline */
-/* Different highlighting based on score ranges - prominent outline approach */
-.sp-danger-extreme {
-  outline: 2px solid #ff3b30 !important; /* iOS red */
-  box-shadow: 0 0 4px rgba(255, 59, 48, 0.5);
+.sp-danger:hover {
+  outline-width: 4px !important;
+  background-color: rgba(255, 51, 51, 0.05);
 }
 
-.sp-danger-high {
-  outline: 2px solid #ff3b30 !important; /* iOS red */
-  box-shadow: 0 0 3px rgba(255, 59, 48, 0.4);
-}
-
-.sp-danger-medium {
-  outline: 2px solid #ff3b30 !important; /* iOS red */
-  box-shadow: 0 0 2px rgba(255, 59, 48, 0.3);
-}
-
-.sp-danger-low {
-  outline: 2px solid #ff9500 !important; /* iOS orange */
-  box-shadow: 0 0 2px rgba(255, 149, 0, 0.3);
-}
-
-/* Clean tooltip warning message - responsive positioning */
+/* Tooltip warning message */
 .sp-danger::before {
-  content: attr(data-sp-warning, "Potential risk detected");
+  content: attr(data-sp-warning, "⚠️ Potential scam: low trust score");
   position: absolute;
-  top: -40px;
+  top: -45px;
   left: 0;
-  background-color: #333;
+  background-color: #ff3333;
   color: white;
   padding: 8px 12px;
   border-radius: 6px;
-  font-size: var(--sp-warning-font-size, 12px);
-  font-weight: 500;
+  font-size: var(--sp-warning-font-size, 16px);
+  font-weight: bold;
   white-space: normal;
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.3s, transform 0.2s;
   pointer-events: none;
   z-index: 10000;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  transform: translateY(3px);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  letter-spacing: 0;
-  max-width: 280px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  transform: translateY(5px);
+  font-family: Arial, sans-serif;
+  letter-spacing: 0.2px;
+  max-width: 300px;
   line-height: 1.4;
-  width: max-content;
-  max-width: min(280px, calc(100vw - 40px)); /* Prevents overflow on small screens */
 }
 
 .sp-danger:hover::before {
   opacity: 1;
   transform: translateY(0);
-  animation: var(--sp-animation, fadeIn 0.2s ease);
 }
 
-/* Enhanced visual risk meter */
+/* New visual risk meter */
 .sp-risk-meter {
   position: absolute;
-  height: 6px; /* Increased from 3px to be more visible */
+  height: 4px;
   bottom: -8px;
   left: 0;
   width: 100%;
   background-color: #f0f0f0;
-  border-radius: 3px;
+  border-radius: 2px;
   overflow: hidden;
-  opacity: 1;
-  transition: height 0.2s ease;
+  opacity: 0;
+  transition: opacity 0.3s ease;
   z-index: 9999;
-  min-width: 60px; /* Ensures a minimum width for short links */
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .sp-danger:hover .sp-risk-meter {
-  height: 8px; /* Increased from 5px */
+  opacity: 1;
 }
 
 .sp-risk-meter-fill {
   height: 100%;
   width: var(--risk-level, 50%);
-  transition: width 0.3s ease-out;
-  border-radius: 3px;
+  transition: width 0.5s ease-in-out;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    #02c39a 0%,
+    #8ac926 30%,
+    #ffca3a 50%,
+    #ff924c 70%,
+    #ff595e 100%
+  );
 }
 
-/* All risk meters use red gradient, with varying intensities */
-.sp-risk-meter-fill-extreme {
-  background: linear-gradient(90deg, #ff3b30 20%, #ff5146 100%);
+.sp-risk-meter-marker {
+  position: absolute;
+  width: 3px;
+  height: 8px;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 1px;
+  transform: translateX(-50%);
+  z-index: 10000;
 }
 
-.sp-risk-meter-fill-high {
-  background: linear-gradient(90deg, #ff3b30 0%, #ff5146 100%);
-}
-
-.sp-risk-meter-fill-medium {
-  background: linear-gradient(90deg, #ff3b30 0%, #ff7a73 100%);
-}
-
-.sp-risk-meter-fill-low {
-  background: linear-gradient(90deg, #ff9500 0%, #ffb340 100%);
-}
-
-/* Clean score value indicator */
 .sp-risk-meter-value {
   position: absolute;
-  font-size: 11px; /* Slightly larger */
-  font-weight: 600; /* Bolder */
+  font-size: 11px;
+  font-weight: bold;
   color: #fff;
   background-color: #333;
-  padding: 3px 8px;
+  padding: 2px 6px;
   border-radius: 10px;
-  bottom: 10px;
+  bottom: 8px;
   transform: translateX(-50%);
   white-space: nowrap;
   z-index: 10001;
-  opacity: 0.9; /* More visible by default */
+  opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  min-width: 40px;
-  text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-.sp-danger:hover .sp-risk-meter-value {
+.sp-risk-meter:hover .sp-risk-meter-value {
   opacity: 1;
 }
 
-/* Minimalist safety banner for risky sites - responsive design */
+/* Safety banner for risky sites */
 .sp-safety-banner {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  background-color: rgba(51, 51, 51, 0.97);
+  background-color: rgba(255, 0, 0, 0.95);
   color: white;
-  padding: 10px 16px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  font-size: 14px;
-  font-weight: 500;
+  padding: 10px 20px;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
   z-index: 2147483647; /* Maximum z-index value */
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   transform: translateY(-100%);
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s ease-in-out;
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
 }
@@ -168,48 +139,32 @@
 .sp-safety-banner-content {
   flex: 1;
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 8px;
-  min-width: 200px;
+  gap: 12px;
 }
 
 .sp-safety-banner-text {
-  font-size: 14px;
+  font-size: 16px;
   max-width: 700px;
-  font-weight: 400;
 }
 
 .sp-safety-banner-score {
-  margin-left: 8px;
-  font-weight: 500;
-  padding: 2px 6px;
-  border-radius: 12px;
-  font-size: 12px;
+  background-color: white;
+  color: #ff3333;
+  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 4px;
+  min-width: 70px;
 }
 
-/* Banner color variants */
-.sp-safety-banner.high-risk {
-  border-top: 3px solid #ff3b30;
-}
-
-.sp-safety-banner.high-risk .sp-safety-banner-score {
-  background-color: #ff3b30;
-  color: white;
-}
-
-.sp-safety-banner.medium-risk {
-  border-top: 3px solid #ff9500;
-}
-
-.sp-safety-banner.medium-risk .sp-safety-banner-score {
-  background-color: #ff9500;
-  color: white;
+.sp-safety-banner-score-value {
+  font-weight: bold;
 }
 
 .sp-safety-banner-close {
@@ -217,9 +172,9 @@
   border: none;
   color: white;
   cursor: pointer;
-  font-size: 16px;
-  font-weight: 400;
-  padding: 0 6px;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 0 10px;
   opacity: 0.8;
   transition: opacity 0.2s;
 }
@@ -229,64 +184,98 @@
 }
 
 .sp-safety-banner-action {
-  background-color: transparent;
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: white;
+  color: #ff3333;
+  border: none;
   border-radius: 4px;
-  padding: 4px 10px;
-  font-weight: 500;
+  padding: 6px 14px;
+  font-weight: bold;
   cursor: pointer;
-  margin-left: 12px;
-  transition: background-color 0.2s, border-color 0.2s;
-  font-size: 12px;
+  margin-left: 15px;
+  transition: background-color 0.2s;
+  font-size: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .sp-safety-banner-action:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.5);
+  background-color: #f8f8f8;
 }
 
 .sp-safety-banner-warning-icon {
-  font-size: 14px;
+  font-size: 20px;
+  margin-right: 5px;
 }
 
-/* High contrast mode for accessibility */
+.sp-safety-banner.high-risk {
+  background-color: rgba(255, 0, 0, 0.95);
+}
+
+.sp-safety-banner.medium-risk {
+  background-color: rgba(255, 165, 0, 0.95);
+}
+
+/* Add pulsing effect to make dangerous links more noticeable */
+@keyframes sp-pulse {
+  0% {
+    outline-color: rgba(255, 51, 51, 1);
+  }
+  50% {
+    outline-color: rgba(255, 51, 51, 0.6);
+  }
+  100% {
+    outline-color: rgba(255, 51, 51, 1);
+  }
+}
+
+/* High contrast mode for visually impaired users */
 @media (prefers-contrast: high), .sp-high-contrast {
   .sp-danger {
-    outline: 2px solid #000000 !important;
+    outline: 5px solid #ff0000 !important;
     background-color: #ffeeee !important;
-  }
-
-  .sp-danger-extreme {
-    outline: 3px solid #000000 !important;
-  }
-
-  .sp-danger-high {
-    outline: 3px solid #000000 !important;
-  }
-
-  .sp-danger-medium {
-    outline: 3px solid #000000 !important;
-  }
-
-  .sp-danger-low {
-    outline: 3px solid #000000 !important;
   }
 
   .sp-danger::before {
     background-color: #000000;
     color: #ffffff;
-    border: 1px solid #ffffff;
+    font-size: 18px;
+    border: 2px solid #ffffff;
   }
 
   .sp-safety-banner {
     background-color: #000000;
-    border-top: 4px solid #ffffff;
+    border-bottom: 4px solid #ffffff;
   }
+}
+
+/* Badge option for smaller links */
+.sp-danger-badge {
+  position: relative;
+}
+
+.sp-danger-badge::after {
+  content: "⚠️";
+  font-size: 16px;
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #ff3333;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* For reduced motion preference */
 @media (prefers-reduced-motion) {
+  .sp-danger {
+    animation: none;
+  }
+
   .sp-danger::before {
     transition: opacity 0.1s linear;
     transform: none;
@@ -305,78 +294,15 @@
   }
 }
 
-/* Responsive adjustments for different screen sizes */
+/* Improve accessibility for large font sizes */
 @media (max-width: 768px) {
   .sp-danger::before {
     max-width: 250px;
     white-space: normal;
-    font-size: 11px; /* Slightly smaller font on mobile */
+    top: -60px;
   }
 
-  .sp-safety-banner {
-    padding: 8px 12px;
-  }
-  
   .sp-safety-banner-text {
-    font-size: 13px;
-    line-height: 1.4;
-  }
-  
-  .sp-safety-banner-action {
-    margin-top: 4px;
-    padding: 3px 8px;
-    font-size: 11px;
-  }
-}
-
-/* Small mobile screens */
-@media (max-width: 480px) {
-  .sp-safety-banner {
-    padding: 8px 10px;
-  }
-  
-  .sp-safety-banner-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  
-  .sp-safety-banner-text {
-    font-size: 12px;
-  }
-  
-  .sp-safety-banner-score {
-    margin-left: 0;
-  }
-  
-  .sp-safety-banner-action {
-    margin-left: 0;
-    margin-top: 6px;
-    width: 100%;
-    text-align: center;
-    padding: 6px 8px;
-  }
-  
-  .sp-danger::before {
-    left: 50%;
-    transform: translateX(-50%) translateY(3px);
-    text-align: center;
-  }
-  
-  .sp-danger:hover::before {
-    transform: translateX(-50%) translateY(0);
-  }
-}
-
-/* Animation for tooltip */
-@keyframes fadeIn {
-  0% { opacity: 0; transform: translateY(3px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-/* Avoid overlapping with browser toolbars and UI elements */
-@supports (padding-top: env(safe-area-inset-top)) {
-  .sp-safety-banner {
-    padding-top: calc(env(safe-area-inset-top) + 10px);
+    font-size: 14px;
   }
 }

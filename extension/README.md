@@ -1,5 +1,7 @@
 # Scam-Protector Chrome Extension
 
+> **⚠️ DEVELOPMENT STATUS: This extension is currently under development and not yet available in browser stores. Check our website for updates on the official release date.**
+
 A Chrome extension that automatically scans links on web pages and warns users about potentially risky websites.
 
 ## Features

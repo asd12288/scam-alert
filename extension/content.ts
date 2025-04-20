@@ -65,7 +65,7 @@ function getWarningText(score: number): string {
   }
 }
 
-// Create a visual risk meter element with minimalist design
+// Create a visual risk meter element
 function createRiskMeter(score: number): HTMLDivElement {
   // Convert score to a risk percentage (0-100)
   // Where 100 score = 0% risk, 0 score = 100% risk
@@ -79,26 +79,21 @@ function createRiskMeter(score: number): HTMLDivElement {
   const riskFill = document.createElement("div");
   riskFill.className = "sp-risk-meter-fill";
   riskFill.style.setProperty("--risk-level", `${riskPercentage}%`);
-  
-  // Add risk level class based on score for monochromatic coloring
-  if (score < 20) {
-    riskFill.classList.add("sp-risk-meter-fill-extreme");
-  } else if (score < 40) {
-    riskFill.classList.add("sp-risk-meter-fill-high");
-  } else if (score < 60) {
-    riskFill.classList.add("sp-risk-meter-fill-medium");
-  } else {
-    riskFill.classList.add("sp-risk-meter-fill-low");
-  }
+
+  // Create a marker at the 60% threshold (corresponds to our RISKY_THRESHOLD)
+  const thresholdMarker = document.createElement("div");
+  thresholdMarker.className = "sp-risk-meter-marker";
+  thresholdMarker.style.left = "40%"; // 100 - RISKY_THRESHOLD
 
   // Create a score value indicator
   const scoreValue = document.createElement("div");
   scoreValue.className = "sp-risk-meter-value";
-  scoreValue.textContent = `${score}/100`;
+  scoreValue.textContent = `Score: ${score}/100`;
   scoreValue.style.left = `${100 - riskPercentage}%`;
 
   // Assemble the risk meter
   riskMeter.appendChild(riskFill);
+  riskMeter.appendChild(thresholdMarker);
   riskMeter.appendChild(scoreValue);
 
   return riskMeter;
@@ -342,7 +337,7 @@ function addDebugControls(): void {
   document.body.appendChild(debugPanel);
 }
 
-// Mark links that match risky hostnames with the new highlight design
+// Mark links that match risky hostnames
 function markRiskyLinks(scoreMap: HostScoreMap): void {
   const links = document.querySelectorAll("a[href]");
 
@@ -360,38 +355,14 @@ function markRiskyLinks(scoreMap: HostScoreMap): void {
           // Debug logging to help troubleshoot score issues
           console.debug(`Scam-Protector: ${url.hostname} has score ${score}`);
 
-          // Remove any existing risk meters from previous scans
-          const existingMeters = link.querySelectorAll('.sp-risk-meter');
-          existingMeters.forEach(meter => meter.remove());
-          
-          // Remove any existing indicators to avoid duplicates
-          const existingIndicators = link.querySelectorAll('.sp-indicator');
-          existingIndicators.forEach(indicator => indicator.remove());
-          
-          // Remove any existing danger classes to avoid stacking them
-          link.classList.remove("sp-danger-extreme", "sp-danger-high", "sp-danger-medium", "sp-danger-low");
-
           if (score < RISKY_THRESHOLD) {
-            // Make the link relatively positioned for proper positioning of risk meter
-            link.style.position = 'relative';
             link.classList.add("sp-danger");
-            
-            // Apply risk-level specific class for coloring
-            if (score < 20) {
-              link.classList.add("sp-danger-extreme");
-            } else if (score < 35) {
-              link.classList.add("sp-danger-high");
-            } else if (score < 50) {
-              link.classList.add("sp-danger-medium");
-            } else {
-              link.classList.add("sp-danger-low");
-            }
 
             // Set custom warning message based on risk level
             const warningText = getWarningText(score);
             link.setAttribute("data-sp-warning", warningText);
 
-            // Store the actual score as a data attribute
+            // Store the actual score as a data attribute for debugging
             link.setAttribute("data-sp-score", score.toString());
 
             // Add aria attributes for screen readers
@@ -399,16 +370,16 @@ function markRiskyLinks(scoreMap: HostScoreMap): void {
 
             // Add the visual risk meter
             const riskMeter = createRiskMeter(score);
-            
-            // Apply a larger margin to create space below link
-            link.style.marginBottom = "16px";
-            
-            // Make sure meter is appended as the last child of the link
             link.appendChild(riskMeter);
-            
+
+            // For very risky sites, add an additional visual indicator
+            if (score < VERY_RISKY_THRESHOLD) {
+              link.classList.add("sp-danger-badge");
+            }
+
             // Apply accessibility settings
             if (ACCESSIBILITY.largeText) {
-              link.style.setProperty("--sp-warning-font-size", "14px");
+              link.style.setProperty("--sp-warning-font-size", "16px");
             }
 
             if (ACCESSIBILITY.highContrast) {
@@ -418,14 +389,11 @@ function markRiskyLinks(scoreMap: HostScoreMap): void {
             if (ACCESSIBILITY.animationReduced) {
               link.style.setProperty("--sp-animation", "none");
             }
-            
-            // Log success for debugging
-            console.debug(`Scam-Protector: Added risk meter to ${url.hostname} with score ${score}`);
           }
         }
       }
     } catch (e) {
-      console.error("Scam-Protector: Error marking risky link", e);
+      // Skip invalid URLs
     }
   });
 }
