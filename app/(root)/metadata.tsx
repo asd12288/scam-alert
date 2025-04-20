@@ -1,4 +1,61 @@
 import type { Metadata } from "next";
+import { Metadata as DynamicMetadata, ResolvingMetadata } from "next";
+
+// This file provides dynamic metadata for the security report page
+// When someone shares a link with ?domain=example.com, this will enhance the Open Graph tags
+
+export async function generateMetadata(
+  { params, searchParams }: { params: any; searchParams: { domain?: string } },
+  parent: ResolvingMetadata
+): Promise<DynamicMetadata> {
+  // Get the domain from search params
+  const domain = searchParams.domain;
+  
+  // If no domain, return default metadata
+  if (!domain) {
+    return {
+      title: "Check Website Security - Scam Protector",
+      description: "Scan any website for potential security risks and scams in seconds with Scam Protector's advanced security tools.",
+    };
+  }
+
+  // If a domain is provided, try to get data for better sharing
+  try {
+    // Format the domain for display without any potential query params
+    const cleanDomain = domain.split('/')[0];
+    
+    // We could fetch the score here from the API if needed
+    // For now, we'll just use the domain
+    
+    const title = `Security Report for ${cleanDomain} - Scam Protector`;
+    const description = `See the detailed security analysis of ${cleanDomain}. Check if it's safe or potentially risky with Scam Protector's security tools.`;
+    
+    // Enhance the OG metadata for better social sharing experience
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        url: `/?domain=${encodeURIComponent(cleanDomain)}`,
+        siteName: "Scam Protector",
+        locale: "en_US",
+        type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+      },
+    };
+  } catch (error) {
+    console.error("Error generating metadata:", error);
+    return {
+      title: "Check Website Security - Scam Protector",
+      description: "Scan any website for potential security risks and scams in seconds.",
+    };
+  }
+}
 
 export const metadata: Metadata = {
   title: "Scam Protector - Detect Online Scams Instantly",

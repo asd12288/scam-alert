@@ -21,8 +21,10 @@ import {
   Linkedin,
   Instagram,
   Link as LinkIcon,
+  Flag,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface WhoisData {
   domainName?: string;
@@ -69,6 +71,7 @@ interface SecurityReportProps {
     screenshot?: string;
     searchCount?: number;
     cached?: boolean;
+    specialEasterEgg?: boolean;
   };
   onRefresh?: () => void;
 }
@@ -83,6 +86,9 @@ const SecurityReport: React.FC<SecurityReportProps> = ({
   const [copied, setCopied] = useState(false);
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [fbShareTextCopied, setFbShareTextCopied] = useState(false);
+  const isLowScore = score < 60;
+  const isEasterEgg = data?.specialEasterEgg === true;
 
   // Extract data safely
   const domain = data?.domain || "Unknown domain";
@@ -203,7 +209,7 @@ const SecurityReport: React.FC<SecurityReportProps> = ({
   // Sharing functionality
   const getShareUrl = () => {
     // Create a URL with the domain as a parameter
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
     return `${baseUrl}/?domain=${encodeURIComponent(domain)}`;
   };
 
@@ -216,18 +222,40 @@ const SecurityReport: React.FC<SecurityReportProps> = ({
   };
 
   const shareToFacebook = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getShareUrl())}`;
-    window.open(url, '_blank', 'width=600,height=400');
+    // Show instructions modal for Facebook since it doesn't support pre-filled text
+    const shareText = getShareDescription();
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+      getShareUrl()
+    )}`;
+
+    // Copy the text to clipboard first to make it easier for users
+    navigator.clipboard
+      .writeText(shareText)
+      .then(() => {
+        // After copying text to clipboard, show a small tooltip and open Facebook share dialog
+        setFbShareTextCopied(true);
+        setTimeout(() => setFbShareTextCopied(false), 3000);
+        window.open(url, "_blank", "width=600,height=400");
+      })
+      .catch((err) => {
+        // If clipboard fails, just open Facebook
+        console.error("Failed to copy text: ", err);
+        window.open(url, "_blank", "width=600,height=400");
+      });
   };
 
   const shareToTwitter = () => {
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(getShareDescription())}&url=${encodeURIComponent(getShareUrl())}`;
-    window.open(url, '_blank', 'width=600,height=400');
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+      getShareDescription()
+    )}&url=${encodeURIComponent(getShareUrl())}`;
+    window.open(url, "_blank", "width=600,height=400");
   };
 
   const shareToLinkedin = () => {
-    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(getShareUrl())}`;
-    window.open(url, '_blank', 'width=600,height=400');
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+      getShareUrl()
+    )}`;
+    window.open(url, "_blank", "width=600,height=400");
   };
 
   const shareToInstagram = () => {
@@ -247,17 +275,29 @@ const SecurityReport: React.FC<SecurityReportProps> = ({
   return (
     <div
       id="security-report"
-      className="w-full max-w-3xl mx-auto bg-white rounded-lg shadow-md overflow-hidden border border-gray-200"
+      className={`w-full max-w-3xl mx-auto bg-white rounded-lg shadow-md overflow-hidden border ${isEasterEgg ? 'border-blue-500 shadow-blue-200' : 'border-gray-200'}`}
     >
       {/* Header with website info and risk level - Bigger design */}
       <div
         id="report-header"
-        className={`px-5 py-5 ${colors.bgHeader} border-b ${colors.border} flex flex-col justify-between gap-3`}
+        className={`px-5 py-5 ${isEasterEgg ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-300' : `${colors.bgHeader} border-b ${colors.border}`} flex flex-col justify-between gap-3`}
       >
         <div className="flex justify-between items-center gap-4">
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <div className="flex-shrink-0">
-              {React.cloneElement(colors.icon, { className: "w-8 h-8" })}
+              {isEasterEgg ? (
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 p-2 shadow-md">
+                  <Image
+                    src="/easter-egg-shield.png"
+                    width={36}
+                    height={36}
+                    alt="Scam Protector Shield"
+                    className="animate-pulse"
+                  />
+                </div>
+              ) : (
+                React.cloneElement(colors.icon, { className: "w-8 h-8" })
+              )}
             </div>
             <div className="overflow-hidden">
               <div className="flex items-center gap-2 flex-wrap">
@@ -288,19 +328,33 @@ const SecurityReport: React.FC<SecurityReportProps> = ({
                   </a>
                 </div>
               </div>
-              <p className={`text-base font-medium mt-1 ${colors.text}`}>
-                <span>This website appears to be: {riskLevel}</span>
+              <p className={`text-base font-medium mt-1 ${isEasterEgg ? 'text-blue-800' : colors.text}`}>
+                {isEasterEgg ? (
+                  <span className="flex items-center">
+                    <CheckCircle className="w-5 h-5 text-blue-600 mr-1.5" />
+                    This is your trusted security tool!
+                  </span>
+                ) : (
+                  <span>This website appears to be: {riskLevel}</span>
+                )}
               </p>
             </div>
           </div>
 
           <div className="flex-shrink-0">
-            <Score
-              score={score}
-              size="md"
-              showDescription={false}
-              variant="badge"
-            />
+            {isEasterEgg ? (
+              <div className="bg-blue-600 text-white text-xl font-bold px-4 py-2 rounded-full border-2 border-blue-300 shadow-lg flex items-center justify-center">
+                100%
+                <span className="ml-1 text-yellow-300">★</span>
+              </div>
+            ) : (
+              <Score
+                score={score}
+                size="md"
+                showDescription={false}
+                variant="badge"
+              />
+            )}
           </div>
         </div>
 
@@ -309,16 +363,23 @@ const SecurityReport: React.FC<SecurityReportProps> = ({
           <div className="bg-white bg-opacity-75 rounded-lg py-2 px-3 shadow-sm border border-gray-200 flex items-center justify-between">
             <div className="flex items-center">
               <Share2 className="w-4 h-4 text-blue-600 mr-2" />
-              <span className="text-sm font-medium text-gray-700">Help others stay safe:</span>
+              <span className="text-sm font-medium text-gray-700">
+                Help others stay safe:
+              </span>
             </div>
             <div className="flex space-x-2">
               <button
                 onClick={shareToFacebook}
-                className="bg-[#1877F2] text-white p-2 rounded-full flex items-center justify-center hover:bg-opacity-80 transition-colors w-8 h-8"
+                className="bg-[#1877F2] text-white p-2 rounded-full flex items-center justify-center hover:bg-opacity-80 transition-colors w-8 h-8 relative"
                 aria-label="Share on Facebook"
                 title="Share on Facebook"
               >
                 <Facebook size={16} />
+                {fbShareTextCopied && (
+                  <div className="absolute bg-black text-white text-xs py-1 px-2 rounded -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap w-40 text-center">
+                    Text copied for sharing!
+                  </div>
+                )}
               </button>
               <button
                 onClick={shareToTwitter}
@@ -361,6 +422,52 @@ const SecurityReport: React.FC<SecurityReportProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Easter egg message */}
+      {isEasterEgg && (
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 px-5 py-4 border-y border-blue-200">
+          <div className="flex gap-3 items-center">
+            <div className="bg-blue-100 p-2.5 rounded-full">
+              <CheckCircle className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-medium text-blue-800">You found our Easter egg!</h3>
+              <p className="text-blue-700">
+                Of course we rate ourselves 100/100. We're the good guys, after all!
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Warning banner for low-scoring websites */}
+      {isLowScore && !isEasterEgg && (
+        <div className="bg-red-50 border-y border-red-200 p-4">
+          <div className="flex items-start gap-3">
+            <div className="bg-red-100 p-2 rounded-full">
+              <Flag className="w-5 h-5 text-red-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-medium text-red-800 mb-1">
+                {score < 40
+                  ? "Think this website is dangerous?"
+                  : "Suspicious about this website?"}
+              </h3>
+              <p className="text-red-700 mb-3">
+                {score < 40
+                  ? "Have you been scammed by this website? Help protect others by reporting it."
+                  : "If you've had a bad experience with this site, let us know so we can warn others."}
+              </p>
+              <Link
+                href="/report"
+                className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white py-1.5 px-4 rounded-md font-medium transition-colors text-sm"
+              >
+                <Flag className="w-4 h-4" /> Report This Website
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main content area with simplified layout */}
       <div className="p-4">
@@ -634,6 +741,7 @@ const SecurityReport: React.FC<SecurityReportProps> = ({
                       <div className="text-gray-600">SSL Issuer:</div>
                       <div className="break-words">{ssl.issuer}</div>
                     </>
+
                   )}
 
                   {isMalicious && matches && matches.length > 0 && (

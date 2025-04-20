@@ -78,6 +78,68 @@ const InputScam = ({ onResultsChange }: InputScamProps) => {
       cleanDomain = cleanDomain.replace(/^(https?:\/\/)?(www\.)?/i, "");
       cleanDomain = cleanDomain.split("/")[0]; // Remove any paths
 
+      // Easter egg for when users check our own website
+      if (cleanDomain.toLowerCase() === "scam-protector.com") {
+        // Create a special result for our own website
+        setScore(100);
+        setDomainData({
+          domain: cleanDomain,
+          aiSummary: "This is the official Scam Protector website - the most trusted security analysis tool on the web. You're in safe hands! 😎\n\n✅ Our website is 100% secure and trustworthy\n✅ We help millions stay safe online\n✅ You have excellent taste in security tools\n\n💡 Recommendation: Bookmark this site and share it with friends and family to help them stay safe online too!",
+          details: {
+            safeBrowsing: {
+              isMalicious: false,
+              matches: [],
+              score: 100,
+            },
+            whois: {
+              data: {
+                domainName: "scam-protector.com",
+                creationDate: "2022-10-15T00:00:00.000Z", 
+                expirationDate: "2030-10-15T00:00:00.000Z",
+                registrar: "Super Secure Domains Inc.",
+                registrantOrganization: "Scam Protector Team",
+                registrantCountry: "United States",
+                domainAge: 914, // About 2.5 years as of April 2025
+                privacyProtected: false,
+              },
+              riskFactors: [],
+              score: 100,
+            },
+            patternAnalysis: {
+              riskFactors: [],
+              suspiciousScore: 0,
+            },
+            ssl: {
+              valid: true,
+              issuer: "Let's Encrypt Authority X3",
+              daysRemaining: 89,
+            },
+            analysisDate: new Date().toISOString(),
+          },
+          screenshot: "/easter-egg-shield.png",
+          specialEasterEgg: true,
+        });
+        
+        // Scroll to results after a short delay
+        setTimeout(() => {
+          const reportHeader = document.getElementById("report-header");
+          if (reportHeader) {
+            const paddingTop = 20;
+            const headerPosition =
+              reportHeader.getBoundingClientRect().top +
+              window.pageYOffset -
+              paddingTop;
+            window.scrollTo({
+              top: headerPosition,
+              behavior: "smooth",
+            });
+          }
+        }, 300);
+        
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch("/api/domain-security", {
         method: "POST",
         headers: {
