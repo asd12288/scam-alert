@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { checkSafeBrowsing } from "@/lib/services/safeBrowsingService";
 import { checkWhois } from "@/lib/services/whoisService";
 import { checkSSLCertificate } from "@/lib/services/sslService";
@@ -13,18 +14,28 @@ import {
   getDomainSearchCount,
   getDomainScreenshot,
 } from "@/lib/services/searchHistoryService";
+import { fetchScreenshot } from "@/lib/services/screenshotFetch";
 import { getUserId, calculateSecurityScore, SecurityDetails } from "../utils";
 
-interface RequestBody {
-  domain: string;
-  forceRefresh?: boolean;
-}
+const CACHE_DAYS = parseInt(process.env.DOMAIN_ANALYSIS_CACHE_DAYS || "14", 10);
+
+const requestSchema = z.object({
+  domain: z.string().min(1),
+  forceRefresh: z.boolean().optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as RequestBody;
-    const cleanDomain = body.domain.trim().toLowerCase();
-    const forceRefresh = body.forceRefresh || false;
+    const parsed = requestSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid request data" },
+        { status: 400 }
+      );
+    }
+
+    const { domain, forceRefresh = false } = parsed.data;
+    const cleanDomain = domain.trim().toLowerCase();
 
     // Get user ID if authenticated
     const userId = await getUserId(request);
@@ -39,7 +50,7 @@ export async function POST(request: NextRequest) {
     let isTooOld = false;
 
     if (!forceRefresh) {
-      recentSearch = await getRecentDomainSearch(cleanDomain, 14);
+      recentSearch = await getRecentDomainSearch(cleanDomain, CACHE_DAYS);
 
       // Check if the result is older than 2 weeks
       if (recentSearch) {
@@ -47,7 +58,7 @@ export async function POST(request: NextRequest) {
           recentSearch.created_at || recentSearch.updated_at
         );
         const twoWeeksAgo = new Date();
-        twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+        twoWeeksAgo.setDate(twoWeeksAgo.getDate() - CACHE_DAYS);
 
         isTooOld = analysisDate < twoWeeksAgo;
 
@@ -112,54 +123,53 @@ export async function POST(request: NextRequest) {
     // Initialize security details object
     const securityDetails: Partial<SecurityDetails> = {};
 
-    // Run security checks in parallel
-    const [
-      safeBrowsingResult,
-      whoisResult,
-      sslResult,
-      dnsResult,
-      patternAnalysis,
-    ] = await Promise.all([
-      checkSafeBrowsing(cleanDomain).catch((error) => {
-        console.error("Safe Browsing error:", error);
-        return {
-          isMalicious: false,
-          error: true,
-          message: "Failed to check Safe Browsing API",
-        };
-      }),
-      checkWhois(cleanDomain).catch((error) => {
-        console.error("WHOIS error:", error);
-        return {
-          data: {},
-          error: true,
-          message: "Failed to check WHOIS data",
-        };
-      }),
-      checkSSLCertificate(cleanDomain).catch((error) => {
-        console.error("SSL error:", error);
-        return {
-          valid: false,
-          error: true,
-          message: "Failed to check SSL certificate",
-        };
-      }),
-      analyzeDNS(cleanDomain).catch((error) => {
-        console.error("DNS analysis error:", error);
-        return {
-          hasMX: false,
-          hasSPF: false,
-          hasDMARC: false,
-          mxRecords: [],
-          txtRecords: [],
-          riskFactors: ["Failed to analyze DNS records"],
-          securityScore: 0,
-          error: true,
-          message: "Failed to analyze DNS records",
-        };
-      }),
+    // Run security checks in parallel using Promise.allSettled
+    const serviceResults = await Promise.allSettled([
+      checkSafeBrowsing(cleanDomain),
+      checkWhois(cleanDomain),
+      checkSSLCertificate(cleanDomain),
+      analyzeDNS(cleanDomain),
       analyzeDomainName(cleanDomain),
     ]);
+
+    const safeBrowsingResult =
+      serviceResults[0].status === "fulfilled"
+        ? serviceResults[0].value
+        : {
+            isMalicious: false,
+            error: true,
+            message: "Failed to check Safe Browsing API",
+          };
+
+    const whoisResult =
+      serviceResults[1].status === "fulfilled"
+        ? serviceResults[1].value
+        : { data: {}, error: true, message: "Failed to check WHOIS data" };
+
+    const sslResult =
+      serviceResults[2].status === "fulfilled"
+        ? serviceResults[2].value
+        : { valid: false, error: true, message: "Failed to check SSL certificate" };
+
+    const dnsResult =
+      serviceResults[3].status === "fulfilled"
+        ? serviceResults[3].value
+        : {
+            hasMX: false,
+            hasSPF: false,
+            hasDMARC: false,
+            mxRecords: [],
+            txtRecords: [],
+            riskFactors: ["Failed to analyze DNS records"],
+            securityScore: 0,
+            error: true,
+            message: "Failed to analyze DNS records",
+          };
+
+    const patternAnalysis =
+      serviceResults[4].status === "fulfilled"
+        ? serviceResults[4].value
+        : { riskFactors: [], suspiciousScore: 0 };
 
     // Update security details with results
     securityDetails.safeBrowsing = safeBrowsingResult;
@@ -190,26 +200,8 @@ export async function POST(request: NextRequest) {
     // Try to get a screenshot if we have one cached but are doing a data refresh
     let screenshot = cachedScreenshot;
 
-    // If no cached screenshot, try to get a fresh one
     if (!screenshot) {
-      try {
-        const screenshotResponse = await fetch(
-          `${request.nextUrl.origin}/api/domain-analysis/screenshot`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ domain: cleanDomain }),
-          }
-        );
-
-        const screenshotData = await screenshotResponse.json();
-        if (screenshotData.success && screenshotData.screenshot) {
-          screenshot = screenshotData.screenshot;
-        }
-      } catch (error) {
-        console.error("Error fetching screenshot:", error);
-        // Continue without screenshot
-      }
+      screenshot = await fetchScreenshot(cleanDomain, request.nextUrl.origin);
     }
 
     // Prepare response data
