@@ -32,16 +32,12 @@ export async function captureScreenshot(
 
   let browser;
   try {
-    // Set up browser options
+    // Set up browser options. Use the bundled Chromium in serverless
+    // environments but fall back to Puppeteer's default otherwise.
     const browserOptions = {
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-gpu",
-        "--disable-web-security",
-      ],
-      headless: "new",
+      args: [...chromium.args, "--disable-web-security"],
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
       defaultViewport: { width, height },
     };
 
